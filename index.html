@@ -173,7 +173,7 @@
 
             const CELL_EMPTY = 0, CELL_BUSH = 1, CELL_NEST = 2, CELL_WALL = 3;
 
-            // 保留的前5个关卡（已删除后3关）
+            // 保留的5关
             const levels = [
                 {
                     name: "林间空地", rows: 3, cols: 6, playerStart: { row: 1, col: 0 }, nestPos: { row: 1, col: 5 },
@@ -221,7 +221,7 @@
                 }
             ];
 
-            const STORAGE_KEY = 'bird_nest_v15';
+            const STORAGE_KEY = 'bird_nest_v16';
             function loadRecords() { try{ const d=localStorage.getItem(STORAGE_KEY); if(d){ const r=JSON.parse(d); if(Array.isArray(r)&&r.length===levels.length) return r.map(x=>(typeof x==='number'&&x>0)?x:null); } }catch(e){} return levels.map(()=>null); }
             function saveRecords(r){ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(r)); }catch(e){} }
             function getBest(i){ return loadRecords()[i]||null; }
@@ -345,11 +345,37 @@
             function updateUI(){ elements.moveCount.textContent=moveCount; elements.wormLeft.textContent=wormsRemaining.length; elements.btnUndo.disabled=moveHistory.length===0||gameOver; }
             function updateButtons(){ elements.btnPrev.style.display=levelIdx>0?'':'none'; elements.btnNext.style.display=levelIdx<levels.length-1?'':'none'; }
 
+            function isAdjacent(r,c) {
+                return Math.abs(r - playerPos.row) + Math.abs(c - playerPos.col) === 1;
+            }
+
             function onCellClick(r,c){
                 if(!gameStarted||gameOver||gameWon) return;
-                if(highlightCells.some(h=>h.row===r&&h.col===c)){ executeMove(r,c); return; }
-                if(isPlayerAt(r,c)){ selectedPlayer=!selectedPlayer; highlightCells=selectedPlayer?validMoves():[]; renderGrid(); return; }
-                if(selectedPlayer){ selectedPlayer=false; highlightCells=[]; renderGrid(); }
+                // 点击高亮可移动格子 → 移动
+                if(highlightCells.some(h=>h.row===r&&h.col===c)){
+                    executeMove(r,c);
+                    return;
+                }
+                // 点击小鸟自己 → 切换选中
+                if(isPlayerAt(r,c)){
+                    selectedPlayer = !selectedPlayer;
+                    highlightCells = selectedPlayer ? validMoves() : [];
+                    renderGrid();
+                    return;
+                }
+                // 直接点击相邻格子 → 移动（如果合法）
+                if(isAdjacent(r,c)){
+                    if(cellType(r,c) !== CELL_WALL && !enemyAt(r,c)){
+                        executeMove(r,c);
+                        return;
+                    }
+                }
+                // 其他情况：取消选中
+                if(selectedPlayer){
+                    selectedPlayer = false;
+                    highlightCells = [];
+                    renderGrid();
+                }
             }
 
             function validMoves(){
@@ -468,7 +494,7 @@
                 <p style="font-size:0.8rem;">收集所有蠕虫，返回鸟巢！</p>
                 <div style="text-align:left;font-size:0.74rem;line-height:1.6;margin:4px 0;">
                 <div>🎯 目标：收集所有🪱蠕虫，回到🪹鸟巢</div>
-                <div>👆 操作：点小鸟→再点高亮格移动</div>
+                <div>👆 操作：直接点击相邻格子移动，或点小鸟看范围</div>
                 <div>🟠 橙色格：巡逻路线</div>
                 <div>🔴 红色格：危险（踏入立即失败，胜利优先）</div>
                 <div>🌿 灌木：可躲避🦅鹰的视线</div></div>
