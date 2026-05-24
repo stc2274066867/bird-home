@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>🐦 小鸟归巢 · 关卡设计器 V8</title>
+    <style>
+        :root {
+            --cell-size: clamp(36px, 10vw, 52px);
+            --grass: #c8e6c9;
+            --grass-alt: #b9dbbc;
+            --bush: #388e3c;
+            --nest: #f9a825;
+            --wall: #37474f;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #e8f5e9;
+            min-height:100vh; padding:8px; display:flex; flex-direction:column; align-items:center; gap:10px;
+        }
+        .container {
+            background: white; border-radius:16px; padding:14px; box-shadow:0 10px 30px rgba(0,0,0,0.1);
+            display:flex; flex-direction:column; gap:10px; width:100%; max-width:650px;
+        }
+        h1 { font-size:1.3rem; color:#2e7d32; text-align:center; }
+        .controls { display:flex; gap:6px; flex-wrap:wrap; align-items:center; justify-content:center; }
+        .controls label { font-size:0.8rem; font-weight:600; }
+        .controls input[type=number] { width:60px; padding:4px; border-radius:6px; border:1px solid #ccc; text-align:center; }
+        .controls input[type=text] { padding:4px 8px; border-radius:6px; border:1px solid #ccc; font-size:0.8rem; width:120px; }
+        .btn { padding:6px 14px; border:none; border-radius:16px; font-size:0.78rem; font-weight:600; cursor:pointer; transition:0.2s; }
+        .btn-active { background:#ff8f00; color:white; }
+        .btn-gray { background:#eee; color:#444; }
+        .btn-blue { background:#1976d2; color:white; }
+        .btn-green { background:#43a047; color:white; }
+        .btn-red { background:#d32f2f; color:white; }
+
+        .mode-bar { display:flex; gap:4px; flex-wrap:wrap; justify-content:center; }
+        .grid-editor { display:grid; gap:2px; background:#a5d6a7; padding:4px; border-radius:12px; margin:0 auto; }
+        .cell {
+            width:var(--cell-size); height:var(--cell-size); border-radius:5px; position:relative;
+            display:flex; align-items:center; justify-content:center; font-size:calc(var(--cell-size)*0.38);
+            background:var(--grass); border:2px solid transparent; cursor:pointer; transition:0.15s;
+        }
+        .cell.alt { background:var(--grass-alt); }
+        .cell.bush { background:var(--bush); }
+        .cell.nest { background:var(--nest); border-color:#f9a825; }
+        .cell.wall { background:var(--wall); }
+
+        .cell-dots { position:absolute; top:2px; right:2px; display:flex; flex-wrap:wrap; gap:1px; pointer-events:none; z-index:10; }
+        .dot { width:8px; height:8px; border-radius:50%; border:1px solid rgba(0,0,0,0.4); }
+        .dot-player { background:#ff6d00; }
+        .dot-worm { background:#d32f2f; }
+        .dot-path { background:#ffcc80; }
+        .dot-start { background:#ffb300; animation: dot-pulse 1s infinite; }
+        .dot-hawk { background:#8d5524; }
+        @keyframes dot-pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+
+        .info-panel { font-size:0.72rem; background:#f5f5f5; border-radius:8px; padding:6px 10px; min-height:24px; color:#444; }
+
+        .enemy-list { display:flex; flex-direction:column; gap:6px; }
+        .enemy-item { background:#f5f5f5; border-radius:10px; padding:8px; display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-size:0.75rem; }
+        .enemy-item select { padding:2px 4px; border-radius:4px; }
+        .export-box { background:#263238; color:#e0f2f1; border-radius:12px; padding:12px; font-family:monospace; font-size:0.7rem; max-height:300px; overflow:auto; white-space:pre-wrap; word-break:break-all; margin-top:8px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🐦 关卡设计器 V8</h1>
+    <div class="controls">
+        <label>关卡名:</label><input type="text" id="levelName" value="自定义关卡">
+        <label>行:</label><input type="number" id="rowsIn" value="6" min="3" max="10" onchange="resizeGrid()">
+        <label>列:</label><input type="number" id="colsIn" value="6" min="3" max="10" onchange="resizeGrid()">
+        <button class="btn btn-green" onclick="exportLevel()">📤 导出关卡代码</button>
+    </div>
+
+    <div class="mode-bar" id="modeBar">
+        <button class="btn btn-active" data-mode="empty" onclick="setMode('empty', this)">🌱 空地</button>
+        <button class="btn btn-gray" data-mode="bush" onclick="setMode('bush', this)">🌿 灌木</button>
+        <button class="btn btn-gray" data-mode="nest" onclick="setMode('nest', this)">🪹 鸟巢</button>
+        <button class="btn btn-gray" data-mode="wall" onclick="setMode('wall', this)">⬛ 墙</button>
+        <button class="btn btn-gray" data-mode="player" onclick="setMode('player', this)">🐦 起点</button>
+        <button class="btn btn-gray" data-mode="worm" onclick="setMode('worm', this)">🪱 蠕虫</button>
+        <button class="btn btn-gray" data-mode="path" onclick="setMode('path', this)">👣 敌人路径</button>
+        <button class="btn btn-gray" data-mode="hawk-pos" onclick="setMode('hawk-pos', this)">🦅 鹰位置</button>
+    </div>
+
+    <div class="grid-editor" id="gridContainer"></div>
+
+    <div class="info-panel" id="infoPanel">点击格子查看属性</div>
+
+    <div class="enemy-list" id="enemyList">
+        <p style="font-size:0.8rem;font-weight:700;">当前敌人：</p>
+        <button class="btn btn-blue" onclick="addEnemy()">➕ 添加敌人</button>
+    </div>
+
+    <div class="export-box" id="exportBox" style="display:none;"></div>
+    <button class="btn btn-gray" id="copyBtn" style="display:none;" onclick="copyCode()">📋 复制代码</button>
+</div>
+
+<script>
+    // ---------- 数据模型 ----------
+    let grid = [];
+    let playerPos = null;
+    let wormPositions = [];
+    let enemies = [];
+    let currentMode = 'empty';
+    let currentEnemyIndex = null;
+
+    const gridContainer = document.getElementById('gridContainer');
+    const enemyListDiv = document.getElementById('enemyList');
+    const infoPanel = document.getElementById('infoPanel');
+    const levelNameInput = document.getElementById('levelName');
+
+    function initGrid(rows, cols) {
+        grid = Array(rows).fill().map(() => Array(cols).fill(0));
+        playerPos = null;
+        wormPositions = [];
+        enemies = [];
+        renderAll();
+    }
+
+    function resizeGrid() {
+        const rows = parseInt(document.getElementById('rowsIn').value) || 6;
+        const cols = parseInt(document.getElementById('colsIn').value) || 6;
+        initGrid(rows, cols);
+    }
+
+    function getCellInfo(r, c) {
+        const info = [];
+        if (grid[r][c] === 1) info.push('灌木');
+        else if (grid[r][c] === 2) info.push('鸟巢');
+        else if (grid[r][c] === 3) info.push('墙');
+        else info.push('空地');
+
+        if (playerPos && playerPos.row === r && playerPos.col === c) info.push('🐦起点');
+        if (wormPositions.some(w => w.row === r && w.col === c)) info.push('🪱蠕虫');
+
+        enemies.forEach((enemy, idx) => {
+            if (enemy.type === 'hawk' && enemy.position && enemy.position.row === r && enemy.position.col === c)
+                info.push(`🦅鹰${idx+1}`);
+            if (enemy.type !== 'hawk' && enemy.path) {
+                const pathIdx = enemy.path.findIndex(p => p.row === r && p.col === c);
+                if (pathIdx >= 0) {
+                    const startMark = (enemy.startIndex === pathIdx) ? '★' : '';
+                    info.push(`👣敌${idx+1}路径点${pathIdx+1}${startMark}`);
+                }
+            }
+        });
+        return info.join(' | ') || '空地';
+    }
+
+    function renderGrid() {
+        gridContainer.innerHTML = '';
+        const rows = grid.length;
+        const cols = grid[0].length;
+        gridContainer.style.gridTemplateColumns = `repeat(${cols}, var(--cell-size))`;
+        gridContainer.style.gridTemplateRows = `repeat(${rows}, var(--cell-size))`;
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                const val = grid[r][c];
+                if (val === 1) cell.classList.add('bush');
+                else if (val === 2) cell.classList.add('nest');
+                else if (val === 3) cell.classList.add('wall');
+                else if ((r + c) % 2 === 0) cell.classList.add('alt');
+
+                const dotsContainer = document.createElement('div');
+                dotsContainer.classList.add('cell-dots');
+                const marks = [];
+                if (playerPos && playerPos.row === r && playerPos.col === c) marks.push('player');
+                if (wormPositions.some(w => w.row === r && w.col === c)) marks.push('worm');
+                enemies.forEach((enemy, idx) => {
+                    if (enemy.type === 'hawk' && enemy.position && enemy.position.row === r && enemy.position.col === c)
+                        marks.push('hawk');
+                    if (enemy.type !== 'hawk' && enemy.path) {
+                        const pathIdx = enemy.path.findIndex(p => p.row === r && p.col === c);
+                        if (pathIdx >= 0) {
+                            marks.push('path');
+                            if (enemy.startIndex === pathIdx) marks.push('start');
+                        }
+                    }
+                });
+                const unique = [...new Set(marks)];
+                unique.forEach(mark => {
+                    const dot = document.createElement('div');
+                    dot.classList.add('dot', `dot-${mark}`);
+                    dotsContainer.appendChild(dot);
+                });
+                cell.appendChild(dotsContainer);
+                cell.addEventListener('click', () => {
+                    handleCellClick(r, c);
+                    infoPanel.textContent = `(${r},${c}) ` + getCellInfo(r, c);
+                });
+                gridContainer.appendChild(cell);
+            }
+        }
+    }
+
+    function handleCellClick(r, c) {
+        if (currentMode === 'empty') { grid[r][c] = 0; }
+        else if (currentMode === 'bush') { grid[r][c] = 1; clearSpecialsAt(r,c); }
+        else if (currentMode === 'nest') { grid[r][c] = 2; clearSpecialsAt(r,c); }
+        else if (currentMode === 'wall') { grid[r][c] = 3; clearSpecialsAt(r,c); }
+        else if (currentMode === 'player') {
+            if (grid[r][c] === 3 || grid[r][c] === 1) return;
+            playerPos = { row: r, col: c };
+        }
+        else if (currentMode === 'worm') {
+            if (grid[r][c] === 3 || grid[r][c] === 1) return;
+            if (playerPos && playerPos.row === r && playerPos.col === c) return;
+            const idx = wormPositions.findIndex(w => w.row === r && w.col === c);
+            if (idx >= 0) wormPositions.splice(idx, 1);
+            else wormPositions.push({ row: r, col: c });
+        }
+        else if (currentMode === 'path') {
+            if (currentEnemyIndex === null) { alert('请先选择一个敌人编辑路径。'); return; }
+            const enemy = enemies[currentEnemyIndex];
+            if (enemy.type === 'hawk') { alert('鹰不需要路径。'); return; }
+            if (grid[r][c] === 3) return;
+            if (!enemy.path) enemy.path = [];
+            const idx = enemy.path.findIndex(p => p.row === r && p.col === c);
+            if (idx >= 0) {
+                enemy.path.splice(idx, 1);
+                if (enemy.startIndex >= enemy.path.length) enemy.startIndex = 0;
+            } else {
+                enemy.path.push({ row: r, col: c });
+                if (enemy.path.length === 1) enemy.startIndex = 0;
+            }
+        }
+        else if (currentMode === 'hawk-pos') {
+            if (currentEnemyIndex === null) { alert('请先选择一个敌人。'); return; }
+            const enemy = enemies[currentEnemyIndex];
+            if (enemy.type !== 'hawk') { alert('当前敌人不是鹰。'); return; }
+            enemy.position = { row: r, col: c };
+        }
+        renderAll();
+        infoPanel.textContent = `(${r},${c}) ` + getCellInfo(r, c);
+    }
+
+    function clearSpecialsAt(r, c) {
+        if (playerPos && playerPos.row === r && playerPos.col === c) playerPos = null;
+        wormPositions = wormPositions.filter(w => !(w.row === r && w.col === c));
+        enemies.forEach(e => {
+            if (e.type === 'hawk' && e.position && e.position.row === r && e.position.col === c) e.position = null;
+            if (e.path) e.path = e.path.filter(p => !(p.row === r && p.col === c));
+        });
+    }
+
+    function renderEnemyList() {
+        enemyListDiv.innerHTML = '<p style="font-size:0.8rem;font-weight:700;">当前敌人：</p><button class="btn btn-blue" onclick="addEnemy()">➕ 添加敌人</button>';
+        enemies.forEach((e, i) => {
+            const div = document.createElement('div');
+            div.className = 'enemy-item';
+            let typeHTML = `<select onchange="changeEnemyType(${i}, this.value)"><option value="cat" ${e.type==='cat'?'selected':''}>🐱 猫</option><option value="snake" ${e.type==='snake'?'selected':''}>🐍 蛇</option><option value="hawk" ${e.type==='hawk'?'selected':''}>🦅 鹰</option></select>`;
+            let info = '';
+            let startSelect = '';
+            if (e.type === 'hawk') {
+                info = e.position ? `位置 (${e.position.row},${e.position.col})` : '未设置位置';
+            } else {
+                info = `路径点: ${e.path ? e.path.length : 0}`;
+                if (e.path && e.path.length > 0) {
+                    const options = e.path.map((p, idx) => `<option value="${idx}" ${e.startIndex===idx?'selected':''}>起点${idx+1}: (${p.row},${p.col})</option>`).join('');
+                    startSelect = `<select onchange="setStartIndex(${i}, this.value)">${options}</select>`;
+                }
+            }
+            div.innerHTML = `${typeHTML} <span style="flex:1;font-size:0.72rem;">${info}</span> ${startSelect}
+            <button class="btn btn-gray" onclick="selectEnemy(${i})">✏️ 编辑</button>
+            <button class="btn btn-red" onclick="deleteEnemy(${i})">🗑</button>`;
+            if (currentEnemyIndex === i) div.style.background = '#e8f5e9';
+            enemyListDiv.appendChild(div);
+        });
+    }
+
+    function addEnemy() { enemies.push({ type:'cat', path:[], position:null, startIndex:0 }); currentEnemyIndex = enemies.length-1; renderAll(); }
+    function deleteEnemy(i) { enemies.splice(i,1); if (currentEnemyIndex===i) currentEnemyIndex=null; else if (currentEnemyIndex>i) currentEnemyIndex--; renderAll(); }
+    function selectEnemy(i) { currentEnemyIndex = i; renderAll(); }
+    function changeEnemyType(i, type) { enemies[i].type = type; if (type==='hawk') { enemies[i].path=[]; enemies[i].startIndex=0; enemies[i].position = enemies[i].position || null; } else { enemies[i].position=null; enemies[i].path = enemies[i].path||[]; enemies[i].startIndex=0; } renderAll(); }
+    function setStartIndex(enemyIdx, idx) { enemies[enemyIdx].startIndex = parseInt(idx); renderAll(); }
+
+    function setMode(mode, btn) {
+        currentMode = mode;
+        document.querySelectorAll('#modeBar button').forEach(b => b.className = 'btn btn-gray');
+        btn.className = 'btn btn-active';
+        if (mode !== 'path' && mode !== 'hawk-pos') currentEnemyIndex = null;
+        renderAll();
+    }
+
+    // 自定义格式化：每个顶层字段占一行，值使用紧凑 JSON
+    function formatLevelObject(obj) {
+        const compact = val => JSON.stringify(val);
+        const lines = [];
+        lines.push('{');
+        lines.push(`  "name": ${compact(obj.name)},`);
+        lines.push(`  "rows": ${compact(obj.rows)},`);
+        lines.push(`  "cols": ${compact(obj.cols)},`);
+        lines.push(`  "playerStart": ${compact(obj.playerStart)},`);
+        lines.push(`  "nestPos": ${compact(obj.nestPos)},`);
+        lines.push(`  "worms": ${compact(obj.worms)},`);
+        lines.push(`  "grid": ${compact(obj.grid)},`);
+        lines.push(`  "enemies": ${compact(obj.enemies)}`);
+        lines.push('}');
+        return lines.join('\n');
+    }
+
+    function exportLevel() {
+        if (!playerPos) { alert('请先设置小鸟起点！'); return; }
+        const rows = grid.length;
+        const cols = grid[0].length;
+        const nestCells = [];
+        for (let r=0; r<rows; r++) for (let c=0; c<cols; c++) if (grid[r][c]===2) nestCells.push({row:r,col:c});
+        if (nestCells.length===0) { alert('请至少放置一个鸟巢！'); return; }
+        const nestPos = nestCells[0];
+
+        const enemyDefs = [];
+        for (const e of enemies) {
+            if (e.type === 'hawk') {
+                if (!e.position) { alert('有一个鹰未设置位置！'); return; }
+                enemyDefs.push({ type:'hawk', position:{ row:e.position.row, col:e.position.col } });
+            } else {
+                if (!e.path || e.path.length < 2) { alert('有一个巡逻敌人路径点数不足（至少2个点）！'); return; }
+                enemyDefs.push({ type:e.type, patrolPath: e.path.map(p=>({row:p.row,col:p.col})), startIndex: e.startIndex||0 });
+            }
+        }
+
+        const name = levelNameInput.value.trim() || '自定义关卡';
+        const levelObj = {
+            name, rows, cols,
+            playerStart: { row:playerPos.row, col:playerPos.col },
+            nestPos: { row:nestPos.row, col:nestPos.col },
+            worms: wormPositions.map(p=>({row:p.row,col:p.col})),
+            grid: grid.map(row=>[...row]),
+            enemies: enemyDefs
+        };
+        const code = formatLevelObject(levelObj);
+        const exportBox = document.getElementById('exportBox');
+        exportBox.style.display = 'block';
+        exportBox.textContent = code;
+        document.getElementById('copyBtn').style.display = 'block';
+    }
+
+    function copyCode() {
+        const text = document.getElementById('exportBox').textContent;
+        navigator.clipboard.writeText(text).then(() => alert('代码已复制！'));
+    }
+
+    function renderAll() { renderGrid(); renderEnemyList(); }
+
+    initGrid(6,6);
+    setMode('empty', document.querySelector('[data-mode="empty"]'));
+</script>
+</body>
+</html>
