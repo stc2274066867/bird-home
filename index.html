@@ -2,57 +2,57 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>🐦 小鸟归巢 · 策略潜行</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, touch-action: none">
+    <title>🐦 小鸟归巢</title>
     <style>
-        :root {
-            --cell-size: clamp(44px, 11.5vw, 64px);
-            --grass: #c8e6c9;
-            --grass-alt: #b9dbbc;
-            --bush: #388e3c;
-            --nest: #f9a825;
-            --danger-zone: #ef9a9a;
-            --danger-bush: #c62828;
-            --patrol-path: #ffe0b2;
-        }
+        :root { --cell-size: clamp(40px, 10.5vw, 60px); --grass: #c8e6c9; --grass-alt: #b9dbbc; --bush: #388e3c;
+            --nest: #f9a825; --wall: #5d4037; --danger-zone: #ef9a9a; --danger-bush: #c62828; --patrol-path: #ffe0b2; }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background: linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 30%, #a5d6a7 60%, #81c784 100%);
+        body { font-family: 'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif; background: linear-gradient(180deg, #e8f5e9 0%, #c8e6c9 30%, #a5d6a7 60%, #81c784 100%);
             min-height:100vh; display:flex; justify-content:center; align-items:center; padding:6px;
-            user-select:none; -webkit-tap-highlight-color:transparent; -webkit-user-select:none;
-        }
-        .game-wrapper {
-            background: rgba(255,255,255,0.92); border-radius:18px; padding:clamp(6px,1.8vw,14px);
+            user-select:none; -webkit-tap-highlight-color:transparent; -webkit-user-select:none; overflow:hidden; }
+        .game-wrapper { background: rgba(255,255,255,0.92); border-radius:18px; padding:clamp(6px,1.8vw,14px);
             box-shadow:0 18px 50px rgba(0,0,0,0.15); display:flex; flex-direction:column; align-items:center;
-            gap:clamp(6px,1.2vw,10px); max-width:96vw;
-        }
+            gap:clamp(6px,1.2vw,10px); max-width:96vw; position:relative; touch-action:none; }
+        .btn { padding: 10px 20px; border: none; border-radius: 50px; font-size: 0.9rem; font-weight:600;
+            cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin: 4px;
+            background: white; color: #2e7d32; border: 3px solid #a5d6a7; }
+        .btn:hover { background: #e8f5e9; border-color: #43a047; }
+        .btn.endless { border-color: #1976d2; color: #1976d2; } .btn.endless:hover { background: #e3f2fd; }
+        .btn.primary { background: #43a047; color: white; border-color: #2e7d32; } .btn.primary:hover { background: #388e3c; }
+        .btn.records { border-color: #7b1fa2; color: #7b1fa2; } .btn.records:hover { background: #f3e5f5; }
+        .lang-btn { position: absolute; top: 8px; right: 8px; background: white; border: 2px solid #a5d6a7;
+            border-radius: 50%; width: 30px; height: 30px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
+        .main-menu { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
+        .menu-title { font-size: 1.6rem; font-weight: 700; color: #2e7d32; }
+        .menu-subtitle { font-size: 0.85rem; color: #555; }
         .game-header { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; width:100%; }
-        .game-title { font-size:clamp(1rem,3vw,1.4rem); font-weight:700; color:#2e7d32; }
+        .game-title { font-size:clamp(1rem,3vw,1.4rem); font-weight:700; color:#2e7d32; cursor:pointer; }
         .game-title .icon { display:inline-block; animation:bounce-icon 1.5s infinite; }
         @keyframes bounce-icon { 0%,100%{transform:translateY(0);} 30%{transform:translateY(-6px);} 50%{transform:translateY(0);} 70%{transform:translateY(-3px);} }
         .level-info { font-size:0.75rem; color:#555; background:#f1f8e9; padding:3px 10px; border-radius:14px; white-space:nowrap; }
         .best-record { font-size:0.72rem; color:#e65100; background:#fff3e0; padding:3px 9px; border-radius:11px; display:flex; align-items:center; gap:2px; }
-        .stats-bar { display:flex; gap:6px; flex-wrap:wrap; justify-content:center; font-size:0.74rem; color:#444; }
-        .stat-item { background:#fffde7; padding:3px 8px; border-radius:12px; display:flex; align-items:center; gap:2px; box-shadow:0 1px 4px rgba(0,0,0,0.04); }
+        .stats-bar { display:flex; gap:6px; flex-wrap:nowrap; justify-content:center; font-size:0.74rem; color:#444; min-height:2.6rem; align-items:center; }
+        .stat-item { background:#fffde7; padding:3px 8px; border-radius:12px; display:flex; align-items:center; gap:2px; box-shadow:0 1px 4px rgba(0,0,0,0.04); white-space:nowrap; }
         .stat-value { font-weight:700; color:#e65100; }
         .grid-container { background:#a5d6a7; border-radius:14px; padding:4px; box-shadow:0 4px 20px rgba(0,0,0,0.1); border:3px solid #81c784; }
         .grid { display:grid; gap:2px; }
-        .cell {
-            width:var(--cell-size); height:var(--cell-size); border-radius:7px; position:relative;
+        .cell { width:var(--cell-size); height:var(--cell-size); border-radius:7px; position:relative;
             display:flex; align-items:center; justify-content:center; font-size:calc(var(--cell-size)*0.44);
-            transition:all 0.15s ease; background:var(--grass); border:2px solid transparent;
-        }
+            transition:all 0.15s ease; background:var(--grass); border:2px solid transparent; }
         .cell.alt { background:var(--grass-alt); }
         .cell.bush { background:#2e7d32; border-color:#1b5e20; box-shadow:inset 0 0 11px rgba(0,0,0,0.3); cursor:pointer; }
         .cell.bush::after { content:'🌿'; font-size:calc(var(--cell-size)*0.44); position:absolute; opacity:0.95; pointer-events:none; }
         .cell.nest { background:#ffe082; border-color:#f9a825; box-shadow:0 0 15px rgba(249,168,37,0.5); cursor:pointer; }
         .cell.nest::after { content:'🪹'; font-size:calc(var(--cell-size)*0.44); position:absolute; pointer-events:none; }
+        .cell.wall { background:var(--wall); border-color:#3e2723; box-shadow:inset 0 2px 6px rgba(0,0,0,0.5); cursor:not-allowed; }
+        .cell.wall::after { content:'🧱'; font-size:calc(var(--cell-size)*0.44); position:absolute; pointer-events:none; opacity:0.8; }
         .cell.patrol-path { background:var(--patrol-path)!important; border-color:#ffcc80!important; box-shadow:inset 0 0 8px rgba(255,152,0,0.25); }
         .cell.patrol-path.bush { background:#5d8a3c!important; }
         .cell.danger-zone { background:var(--danger-zone)!important; border-color:#e57373!important; animation:danger-pulse-bg 1.2s infinite; box-shadow:inset 0 0 14px rgba(229,115,115,0.5)!important; }
         .cell.danger-zone.bush { background:var(--danger-bush)!important; }
-        .cell.nest.danger-zone { background:#ffe082!important; border-color:#f9a825!important; box-shadow:0 0 15px rgba(249,168,37,0.5)!important; animation:none!important; }
+        .cell.nest.danger-zone { background:var(--danger-zone)!important; border-color:#e57373!important; box-shadow:inset 0 0 14px rgba(229,115,115,0.5)!important; animation:danger-pulse-bg 1.2s infinite!important; }
+        .cell.nest.danger-zone::after { content:'🪹'; font-size:calc(var(--cell-size)*0.44); position:absolute; pointer-events:none; }
         @keyframes danger-pulse-bg { 0%,100%{opacity:0.8;} 50%{opacity:1;} }
         .cell .entity { position:absolute; pointer-events:none; z-index:5; transition:all 0.25s ease; filter:drop-shadow(0 3px 4px rgba(0,0,0,0.35)); }
         .cell .entity.player { font-size:calc(var(--cell-size)*0.62); z-index:6; animation:player-idle 2s infinite; filter:drop-shadow(0 3px 5px rgba(255,109,0,0.5)); }
@@ -65,36 +65,21 @@
         .cell.highlight-move { cursor:pointer; animation:pulse-highlight 0.9s infinite; border-color:#ffb300!important; box-shadow:0 0 15px rgba(255,179,0,0.7)!important; }
         @keyframes pulse-highlight { 0%,100%{box-shadow:0 0 9px rgba(255,179,0,0.5);} 50%{box-shadow:0 0 22px rgba(255,179,0,0.9);} }
         .cell.player-selected { border-color:#ff6d00!important; box-shadow:0 0 18px rgba(255,109,0,0.8)!important; transform:scale(1.04); }
-        .cell.danger-flash { animation:danger-pulse 0.5s ease-out; }
-        @keyframes danger-pulse { 0%{background:#ff5252;transform:scale(1.07);} 100%{background:inherit;transform:scale(1);} }
-        .cell.win-flash { animation:win-pulse 0.6s ease-out; }
-        @keyframes win-pulse { 0%{background:#ffd740;transform:scale(1.1);} 100%{background:inherit;transform:scale(1);} }
-        .cell.new-record-flash { animation:new-record-glow 0.7s ease-out; }
-        @keyframes new-record-glow { 0%{background:#ffd740;transform:scale(1.12);box-shadow:0 0 28px #ffab00;} 100%{background:inherit;transform:scale(1);} }
-
+        .cell.danger-flash { animation:danger-pulse 0.5s ease-out; } @keyframes danger-pulse { 0%{background:#ff5252;transform:scale(1.07);} 100%{background:inherit;transform:scale(1);} }
+        .cell.win-flash { animation:win-pulse 0.6s ease-out; } @keyframes win-pulse { 0%{background:#ffd740;transform:scale(1.1);} 100%{background:inherit;transform:scale(1);} }
+        .cell.new-record-flash { animation:new-record-glow 0.7s ease-out; } @keyframes new-record-glow { 0%{background:#ffd740;transform:scale(1.12);box-shadow:0 0 28px #ffab00;} 100%{background:inherit;transform:scale(1);} }
         .message-overlay { position:fixed; top:0; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:center; z-index:100; pointer-events:none; opacity:0; transition:opacity 0.3s; background:rgba(0,0,0,0.45); }
         .message-overlay.active { opacity:1; pointer-events:all; }
         .message-box { background:white; border-radius:16px; padding:18px 20px; text-align:center; box-shadow:0 18px 45px rgba(0,0,0,0.3); max-width:400px; width:93%; animation:pop-in 0.4s; max-height:90vh; overflow-y:auto; }
         @keyframes pop-in { 0%{transform:scale(0.7);opacity:0;} 100%{transform:scale(1);opacity:1;} }
         .message-box h2 { font-size:1.2rem; margin-bottom:4px; color:#2e7d32; }
-        .message-box .msg-icon { font-size:2.2rem; display:block; margin-bottom:3px; }
+        .msg-icon { font-size:2.2rem; display:block; margin-bottom:3px; }
         .win-stats { display:flex; justify-content:center; gap:14px; flex-wrap:wrap; margin:8px 0 6px; }
         .win-stat-item { background:#f5f5f5; border-radius:10px; padding:8px 12px; text-align:center; min-width:60px; }
-        .win-stat-value { font-size:1.3rem; font-weight:700; color:#e65100; }
-        .win-stat-label { font-size:0.7rem; color:#888; }
-        .new-record-badge { display:inline-block; background:#ff8f00; color:white; padding:4px 12px; border-radius:12px; font-weight:700; font-size:0.8rem; animation:pulse-badge 1s infinite; }
-        @keyframes pulse-badge { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
+        .win-stat-value { font-size:1.3rem; font-weight:700; color:#e65100; } .win-stat-label { font-size:0.7rem; color:#888; }
+        .new-record-badge { display:inline-block; background:#ff8f00; color:white; padding:4px 12px; border-radius:12px; font-weight:700; font-size:0.8rem; animation:pulse-badge 1s infinite; } @keyframes pulse-badge { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
         .btn-row { display:flex; flex-wrap:wrap; justify-content:center; gap:5px; margin-top:8px; }
         .message-box button { padding:7px 16px; font-size:0.82rem; border:none; border-radius:18px; cursor:pointer; font-weight:600; transition:all 0.2s; }
-        .btn-primary { background:#43a047; color:white; }
-        .btn-retry { background:#ff8f00; color:white; }
-        .btn-secondary { background:#eee; color:#444; }
-        .btn-records { background:#7b1fa2; color:white; }
-        .records-table { width:100%; border-collapse:collapse; margin:6px 0 10px; font-size:0.76rem; }
-        .records-table th,.records-table td { padding:6px; text-align:center; border-bottom:1px solid #e0e0e0; }
-        .records-table th { background:#f1f8e9; color:#2e7d32; }
-        .records-table .best-highlight { color:#e65100; font-weight:700; }
-        .records-table .current-row { background:#fffde7; }
         .controls-row { display:flex; gap:5px; flex-wrap:wrap; justify-content:center; }
         .controls-row button { padding:5px 11px; font-size:0.75rem; border:2px solid #ccc; border-radius:16px; cursor:pointer; background:white; font-weight:500; display:flex; align-items:center; gap:2px; }
         .controls-row button:hover { border-color:#43a047; background:#f1f8e9; }
@@ -102,452 +87,466 @@
     </style>
 </head>
 <body>
-    <div class="game-wrapper" id="gameWrapper">
+<div class="game-wrapper" id="gameWrapper">
+    <button class="lang-btn" onclick="switchLang()">🌐</button>
+    <div id="mainMenu" class="main-menu">
+        <div class="menu-title"><span class="icon">🐦</span> <span id="mTitle">小鸟归巢</span></div>
+        <div class="menu-subtitle" id="mSub">回合制策略潜行 · 收集蠕虫安全回家</div>
+        <button class="btn primary" onclick="startNormalGame()" id="btnNormal">▶ 开始普通关卡</button>
+        <button class="btn endless" onclick="showDifficulty()" id="btnEndless">♾️ 无尽模式</button>
+        <button class="btn records" onclick="showRecordsPanel()" id="btnRecords">📊 最佳记录</button>
+        <button class="btn" onclick="showHelp()" id="btnHelp">❓ 玩法提示</button>
+    </div>
+    <div id="gameView" style="display:none; flex-direction:column; align-items:center; gap:clamp(6px,1.2vw,10px); width:100%;">
         <div class="game-header">
-            <span class="game-title"><span class="icon">🐦</span>小鸟归巢</span>
-            <span class="level-info">关卡<span class="level-num" id="levelNum">1</span>/<span id="totalLevels">5</span> · <span id="levelName">林间空地</span></span>
-            <span class="best-record" id="bestRecordBadge" style="display:none;"><span class="trophy">🏆</span><span id="bestRecordText">-</span>步</span>
+            <span class="game-title" onclick="backToMenu()"><span class="icon">🐦</span><span id="gTitle">小鸟归巢</span></span>
+            <span class="level-info"><span id="lvlLabel">关卡</span><span id="levelNum">1</span>/<span id="totalLevels">5</span> · <span id="levelName"></span></span>
+            <span class="best-record" id="bestBadge" style="display:none;"><span>🏆</span><span id="bestText">-</span>步</span>
         </div>
         <div class="stats-bar">
-            <span class="stat-item">👣<span class="stat-value" id="moveCount">0</span>步</span>
-            <span class="stat-item">🪱剩<span class="stat-value" id="wormLeft">0</span>只</span>
+            <span class="stat-item">👣<span id="moveCount">0</span><span id="stepLabel">步</span></span>
+            <span class="stat-item">🪱<span id="wormLabel">剩</span><span id="wormLeft">0</span></span>
             <span class="stat-item" id="statusText">🎯抓蠕虫回巢</span>
+            <span class="stat-item" id="endlessInfo" style="display:none;">🌊波数:<span id="waveNum">1</span> | 🏆分数:<span id="scoreNum">0</span></span>
         </div>
         <div class="grid-container"><div class="grid" id="gameGrid"></div></div>
         <div class="controls-row">
-            <button onclick="resetLevel()">🔄重来</button>
-            <button onclick="undoMove()" id="btnUndo" disabled>↩撤销</button>
-            <button onclick="prevLevel()" id="btnPrev">◀</button>
-            <button onclick="nextLevel()" id="btnNext">▶</button>
-            <button onclick="showRecordsPanel()">📊记录</button>
+            <button onclick="resetLevel()" id="resetBtn">🔄重来</button>
+            <button onclick="undoMove()" id="undoBtn" disabled>↩撤销</button>
+            <button onclick="prevLevel()" id="prevBtn">◀</button>
+            <button onclick="nextLevel()" id="nextBtn">▶</button>
+            <button onclick="showRecordsPanel()" id="recBtn">📊记录</button>
+            <button onclick="takeScreenshot()" id="screenshotBtn">📷截图</button>
+            <button onclick="backToMenu()" style="background:#fff3e0;border-color:#ff8f00;" id="menuBtn">🏠菜单</button>
         </div>
     </div>
-    <div class="message-overlay" id="messageOverlay"><div class="message-box" id="messageBox"></div></div>
+</div>
+<div class="message-overlay" id="messageOverlay"><div class="message-box" id="messageBox"></div></div>
 
-    <script>
-        (function() {
-            // ---------- 音效系统 ----------
-            const Sound = {
-                ctx: null,
-                init() {
-                    if (this.ctx) return;
-                    try {
-                        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                    } catch(e) {
-                        console.warn('无法初始化音频');
+<script>
+// ========== 语言系统 ==========
+const L = {
+    zh: { 
+        title:'小鸟归巢', sub:'回合制策略潜行 · 收集蠕虫安全回家', start:'▶ 开始普通关卡', endless:'♾️ 无尽模式', records:'📊 最佳记录', help:'❓ 玩法提示',
+        lvlLabel:'关卡', step:'步', wormLeft:'剩', wave:'波数', score:'分数', statusStart:'🎯抓蠕虫回巢', statusWin:'🎉通关！', newRec:'🏆新纪录！',
+        caught:'💀被抓住了', retry:'🔄重来', undo:'↩撤销', prev:'◀', next:'▶', rec:'📊记录', snap:'📷截图', menu:'🏠菜单', close:'✕关闭', confirmBack:'返回将丢失进度，确定吗？',
+        difficulty:'选择难度', easy:'😊普通', normal:'⚖️困难', cancel:'取消',
+        retryThisBtn: '🔄重试此关',
+        exitEndlessBtn: '🚪退出无尽',
+        endlessEndScore: (wave, score) => `波数：<strong>${wave}</strong> | 得分：<strong>${score}</strong>`
+    },
+    en: { 
+        title:'Bird Home', sub:'Turn-based Stealth · Collect Worms', start:'▶ Normal', endless:'♾️ Endless', records:'📊 Records', help:'❓ How to',
+        lvlLabel:'Level', step:'steps', wormLeft:'left', wave:'Wave', score:'Score', statusStart:'🎯Collect worms', statusWin:'🎉Complete!', newRec:'🏆New Record!',
+        caught:'💀Caught!', retry:'🔄Retry', undo:'↩Undo', prev:'◀', next:'▶', rec:'📊Rec', snap:'📷Snap', menu:'🏠Menu', close:'✕Close', confirmBack:'Progress will be lost. Continue?',
+        difficulty:'Difficulty', easy:'😊Normal', normal:'⚖️Hard', cancel:'Cancel',
+        retryThisBtn: '🔄Retry this',
+        exitEndlessBtn: '🚪Exit Endless',
+        endlessEndScore: (wave, score) => `Wave: <strong>${wave}</strong> | Score: <strong>${score}</strong>`
+    }
+};
+let lang = localStorage.getItem('birdlang') || 'zh';
+function t(key, ...args){
+    const str = L[lang]?.[key];
+    if (typeof str === 'function') return str(...args);
+    return str !== undefined ? str : key;
+}
+function applyLang(){
+    document.getElementById('mTitle').innerText=t('title'); document.getElementById('mSub').innerText=t('sub');
+    document.getElementById('btnNormal').innerHTML=t('start'); document.getElementById('btnEndless').innerHTML=t('endless');
+    document.getElementById('btnRecords').innerHTML=t('records'); document.getElementById('btnHelp').innerHTML=t('help');
+    document.getElementById('gTitle').innerText=t('title'); document.getElementById('lvlLabel').innerText=t('lvlLabel');
+    document.getElementById('stepLabel').innerText=t('step'); document.getElementById('wormLabel').innerText=t('wormLeft');
+    document.getElementById('resetBtn').innerHTML=t('retry'); document.getElementById('undoBtn').innerHTML=t('undo');
+    document.getElementById('prevBtn').innerHTML=t('prev'); document.getElementById('nextBtn').innerHTML=t('next');
+    document.getElementById('recBtn').innerHTML=t('rec'); document.getElementById('screenshotBtn').innerHTML=t('snap');
+    document.getElementById('menuBtn').innerHTML=t('menu');
+}
+window.switchLang = function(){ lang = lang==='zh'?'en':'zh'; localStorage.setItem('birdlang',lang); applyLang(); };
+
+// ========== 音效 ==========
+const Sound = { ctx:null, init(){ if(this.ctx) return; this.ctx = new (window.AudioContext||window.webkitAudioContext)(); },
+    beep(f,d,tp='square',v=0.08){ if(!this.ctx) return; const o=this.ctx.createOscillator(),g=this.ctx.createGain(); o.type=tp; o.frequency.value=f; g.gain.setValueAtTime(v,this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001,this.ctx.currentTime+d); o.connect(g); g.connect(this.ctx.destination); o.start(); o.stop(this.ctx.currentTime+d); },
+    playMove(){ this.beep(600,0.08); }, playCollect(){ this.beep(1200,0.1); setTimeout(()=>this.beep(1500,0.1),60); }, playWin(){ this.beep(523,0.12); setTimeout(()=>this.beep(659,0.12),120); setTimeout(()=>this.beep(784,0.18),240); }, playLose(){ this.beep(150,0.4,'sawtooth',0.1); },
+    playStart(){ this.beep(440,0.1); setTimeout(()=>this.beep(660,0.1),100); setTimeout(()=>this.beep(880,0.12),200); }, playFirst(){ this.beep(330,0.08,'triangle'); setTimeout(()=>this.beep(440,0.08,'triangle'),80); setTimeout(()=>this.beep(550,0.08,'triangle'),160); setTimeout(()=>this.beep(660,0.12,'triangle'),240); } };
+
+// ========== 核心数据 ==========
+const CELL_EMPTY=0, CELL_BUSH=1, CELL_NEST=2, CELL_WALL=3;
+const baseLevels = [
+    { name:"林间空地", rows:3, cols:6, playerStart:{row:1,col:0}, nestPos:{row:1,col:5}, worms:[{row:1,col:3}],
+        grid:[[0,0,0,0,0,0],[0,0,0,0,0,2],[0,0,1,0,0,0]], enemies:[{type:'cat',patrolPath:[{row:0,col:2},{row:1,col:2}],startIndex:0}] },
+    { name:"双猫守卫", rows:6, cols:6, playerStart:{row:5,col:5}, nestPos:{row:0,col:0},
+        worms:[{row:4,col:4},{row:1,col:3},{row:4,col:1}], grid:[[2,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,1,0,0],[0,1,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]],
+        enemies:[{type:'cat',patrolPath:[{row:3,col:3},{row:2,col:3},{row:1,col:3},{row:0,col:3}],startIndex:0},{type:'cat',patrolPath:[{row:0,col:1},{row:1,col:1},{row:2,col:1},{row:3,col:1},{row:4,col:1}],startIndex:1}] },
+    { name:"鹰眼哨兵", rows:6, cols:6, playerStart:{row:5,col:0}, nestPos:{row:0,col:5},
+        worms:[{row:1,col:4},{row:2,col:0},{row:3,col:2}], grid:[[0,0,0,0,0,2],[0,0,0,0,0,0],[0,0,0,0,1,0],[1,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]],
+        enemies:[{type:"hawk",position:{row:2,col:3}},{type:"cat",patrolPath:[{row:0,col:0},{row:1,col:0},{row:2,col:0},{row:3,col:0},{row:4,col:0},{row:5,col:0}],startIndex:0}] },
+    { name:"蜿蜒蛇道", rows:7, cols:4, playerStart:{row:4,col:3}, nestPos:{row:0,col:1},
+        worms:[{row:2,col:2},{row:3,col:0},{row:4,col:2},{row:5,col:1}], grid:[[0,2,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],
+        enemies:[{type:'snake',patrolPath:[{row:0,col:0},{row:1,col:0},{row:2,col:0},{row:3,col:0},{row:4,col:0},{row:5,col:0},{row:6,col:0}],startIndex:0},{type:'snake',patrolPath:[{row:6,col:1},{row:5,col:1},{row:4,col:1},{row:3,col:1},{row:2,col:1},{row:1,col:1},{row:0,col:1}],startIndex:0},{type:'snake',patrolPath:[{row:0,col:2},{row:1,col:2},{row:2,col:2},{row:3,col:2},{row:4,col:2},{row:5,col:2},{row:6,col:2}],startIndex:0},{type:'snake',patrolPath:[{row:6,col:3},{row:5,col:3},{row:4,col:3},{row:3,col:3},{row:2,col:3},{row:1,col:3},{row:0,col:3}],startIndex:0}] },
+    { name:"花园迷宫", rows:8, cols:8, playerStart:{row:7,col:0}, nestPos:{row:7,col:2},
+        worms:[{row:7,col:4},{row:2,col:1},{row:0,col:3},{row:1,col:7},{row:6,col:7},{row:4,col:0}],
+        grid:[[1,0,0,0,0,1,0,0],[1,0,1,1,1,1,0,0],[0,0,1,0,0,0,0,0],[0,1,1,1,0,1,1,1],[0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,0],[0,1,0,1,1,1,0,0],[0,1,2,0,0,1,0,0]],
+        enemies:[{type:"hawk",position:{row:2,col:4}},{type:"hawk",position:{row:4,col:6}},{type:"hawk",position:{row:5,col:3}},{type:"cat",patrolPath:[{row:5,col:0},{row:4,col:0},{row:3,col:0},{row:2,col:0},{row:1,col:0}],startIndex:0},{type:"cat",patrolPath:[{row:5,col:4},{row:4,col:4},{row:3,col:4}],startIndex:0},{type:"snake",patrolPath:[{row:7,col:7},{row:6,col:7},{row:5,col:7},{row:5,col:6},{row:6,col:6},{row:7,col:6}],startIndex:0},{type:"snake",patrolPath:[{row:2,col:6},{row:2,col:7},{row:1,col:7},{row:0,col:7},{row:0,col:6},{row:1,col:6}],startIndex:0}] }
+];
+const STORAGE_KEY = 'bird_nest_v49';
+function loadRecs(){ try{ const d=localStorage.getItem(STORAGE_KEY); if(d) return JSON.parse(d); }catch(e){} return baseLevels.map(()=>null); }
+function saveRecs(r){ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(r)); }catch(e){} }
+
+let levels = [...baseLevels]; let levelIdx = 0, playerPos, enemies, wormsRemaining, moveHistory=[], moveCount=0, selectedPlayer=false, gameOver=false, gameWon=false, highlightCells=[], enemyPatrolStates=[], dangerCells=[], gameStarted=false, isNewRecord=false;
+let isEndless=false, endlessScore=0, endlessWave=1, difficulty='normal';
+
+const gridEl = document.getElementById('gameGrid'); const moveCountEl = document.getElementById('moveCount'); const wormLeftEl = document.getElementById('wormLeft'); const statusEl = document.getElementById('statusText');
+const levelNumEl = document.getElementById('levelNum'); const totalLevelsEl = document.getElementById('totalLevels'); const levelNameEl = document.getElementById('levelName'); const bestBadge = document.getElementById('bestBadge'); const bestText = document.getElementById('bestText');
+const overlay = document.getElementById('messageOverlay'); const box = document.getElementById('messageBox'); const endlessInfo = document.getElementById('endlessInfo'); const waveNumEl = document.getElementById('waveNum'); const scoreNumEl = document.getElementById('scoreNum');
+const menuDiv = document.getElementById('mainMenu'); const gameDiv = document.getElementById('gameView');
+
+function updBestBadge(){ const b=loadRecs()[levelIdx]; if(b!==null){ bestBadge.style.display=''; bestText.textContent=b; } else bestBadge.style.display='none'; }
+function updEndlessUI(){ if(isEndless){ endlessInfo.style.display=''; waveNumEl.textContent=endlessWave; scoreNumEl.textContent=endlessScore; } else endlessInfo.style.display='none'; }
+
+function loadLevel(idx){
+    if(idx<0||idx>=levels.length) return; levelIdx=idx; const L=levels[idx];
+    playerPos={...L.playerStart}; moveCount=0; gameOver=gameWon=selectedPlayer=false; moveHistory=[]; highlightCells=[]; isNewRecord=false;
+    wormsRemaining=L.worms.map(w=>({...w})); enemies=[]; enemyPatrolStates=[];
+    L.enemies.forEach((ed,i)=>{
+        if(ed.type==='hawk'){
+            enemies.push({ type:'hawk', position:{...ed.position}, isSentinel:true, viewType:'rotate', viewPath:[0,1,2,3], viewIdx:0, viewRange:2 });
+            enemyPatrolStates.push(null);
+        } else {
+            const si=ed.startIndex||0; enemies.push({type:ed.type, position:{...ed.patrolPath[si]}, patrolPath:ed.patrolPath.map(p=>({...p})), isSentinel:false});
+            enemyPatrolStates.push({pathIndex:si, direction:1});
+        }
+    });
+    dangerCells=calcDanger(); updBestBadge(); updEndlessUI(); updateUI(); renderGrid(); updateButtons();
+    statusEl.textContent=t('statusStart'); statusEl.style.color='#2e7d32'; levelNumEl.textContent=idx+1; totalLevelsEl.textContent=levels.length; levelNameEl.textContent=L.name;
+    if(gameStarted){ if(idx===0) Sound.playFirst(); else Sound.playStart(); }
+}
+
+function getLevel(){ return levels[levelIdx]; }
+function cellType(r,c){ const L=getLevel(); if(r<0||r>=L.rows||c<0||c>=L.cols) return CELL_WALL; return L.grid[r][c]; }
+function enemyAt(r,c){ return enemies.find(e=>e.position.row===r&&e.position.col===c); }
+function isPlayerAt(r,c){ return playerPos.row===r&&playerPos.col===c; }
+function isNestAt(r,c){ const L=getLevel(); return L.nestPos.row===r&&L.nestPos.col===c; }
+function isWormAt(r,c){ return wormsRemaining.some(w=>w.row===r&&w.col===c); }
+function isDanger(r,c){ return dangerCells.some(d=>d.row===r&&d.col===c); }
+
+function calcDanger(){
+    const d=[]; const L=getLevel();
+    enemies.forEach((en,i)=>{
+        d.push({row:en.position.row, col:en.position.col});
+        if(en.isSentinel){
+            const dirsH = [[-1,0],[0,1],[1,0],[0,-1]];
+            const [dr,dc] = dirsH[en.viewPath[en.viewIdx]];
+            for(let step=1; step<=en.viewRange; step++){
+                const nr = en.position.row + dr*step, nc = en.position.col + dc*step;
+                if(nr<0||nr>=L.rows||nc<0||nc>=L.cols) break;
+                const ct = cellType(nr,nc);
+                if(ct===CELL_WALL || ct===CELL_BUSH) break;
+                d.push({row:nr, col:nc});
+            }
+        } else if(en.patrolPath&&en.patrolPath.length>0){
+            if(en.type==='cat'){
+                const st=enemyPatrolStates[i];
+                if(st){
+                    const p=en.patrolPath;
+                    let ni=st.pathIndex+st.direction;
+                    if(ni>=p.length) ni=p.length-2;
+                    else if(ni<0) ni=1;
+                    const next = p[ni];
+                    if(next) d.push({row:next.row, col:next.col});
+                }
+            }
+        }
+    });
+    const u=[]; const seen=new Set();
+    d.forEach(x=>{ const k=`${x.row},${x.col}`; if(!seen.has(k)){ seen.add(k); u.push(x); } });
+    return u;
+}
+
+function renderGrid(){ const L=getLevel(); const pc=new Set(); enemies.forEach(e=>{ if(e.patrolPath) e.patrolPath.forEach(p=>pc.add(`${p.row},${p.col}`)); });
+    gridEl.innerHTML=''; gridEl.style.gridTemplateColumns=`repeat(${L.cols}, var(--cell-size))`; gridEl.style.gridTemplateRows=`repeat(${L.rows}, var(--cell-size))`;
+    for(let r=0;r<L.rows;r++) for(let c=0;c<L.cols;c++){
+        const cell=document.createElement('div'); cell.classList.add('cell'); cell.dataset.row=r; cell.dataset.col=c;
+        const ct=cellType(r,c); const alt=(r+c)%2===0;
+        if(ct===CELL_WALL) cell.classList.add('wall');
+        else{ if(ct===CELL_BUSH) cell.classList.add('bush'); else if(ct===CELL_NEST||isNestAt(r,c)) cell.classList.add('nest'); else if(alt) cell.classList.add('alt');
+            if(pc.has(`${r},${c}`)) cell.classList.add('patrol-path'); if(isDanger(r,c)) cell.classList.add('danger-zone'); }
+        const eh=enemyAt(r,c); if(eh){ const ent=document.createElement('span'); ent.classList.add('entity',`enemy-${eh.type}`); ent.textContent=eh.type==='cat'?'🐱':eh.type==='hawk'?'🦅':'🐍'; cell.appendChild(ent); }
+        if(isWormAt(r,c)){ const ent=document.createElement('span'); ent.classList.add('entity','worm'); ent.textContent='🪱'; cell.appendChild(ent); }
+        if(isPlayerAt(r,c)&&!gameWon){ const ent=document.createElement('span'); ent.classList.add('entity','player'); ent.textContent='🐦'; cell.appendChild(ent); }
+        if(highlightCells.some(h=>h.row===r&&h.col===c)) cell.classList.add('highlight-move');
+        if(selectedPlayer&&isPlayerAt(r,c)) cell.classList.add('player-selected');
+        cell.addEventListener('click',()=>onCellClick(r,c)); gridEl.appendChild(cell);
+    }
+}
+
+function updateUI(){ moveCountEl.textContent=moveCount; wormLeftEl.textContent=wormsRemaining.length; document.getElementById('undoBtn').disabled=moveHistory.length===0||gameOver; }
+function updateButtons(){ document.getElementById('prevBtn').style.display=(!isEndless&&levelIdx>0)?'':'none'; document.getElementById('nextBtn').style.display=(!isEndless&&levelIdx<levels.length-1)?'':'none'; }
+
+function isAdjacent(r,c){ return Math.abs(r-playerPos.row)+Math.abs(c-playerPos.col)===1; }
+function onCellClick(r,c){
+    if(!gameStarted||gameOver||gameWon) return;
+    if(highlightCells.some(h=>h.row===r&&h.col===c)){ executeMove(r,c); return; }
+    if(isPlayerAt(r,c)){ selectedPlayer=!selectedPlayer; highlightCells=selectedPlayer?validMoves():[]; renderGrid(); return; }
+    if(isAdjacent(r,c) && cellType(r,c)!==CELL_WALL){ executeMove(r,c); return; }
+    if(selectedPlayer){ selectedPlayer=false; highlightCells=[]; renderGrid(); }
+}
+function validMoves(){ const m=[]; [{dr:-1,dc:0},{dr:1,dc:0},{dr:0,dc:-1},{dr:0,dc:1}].forEach(d=>{ const nr=playerPos.row+d.dr,nc=playerPos.col+d.dc; if(cellType(nr,nc)!==CELL_WALL) m.push({row:nr,col:nc}); }); return m; }
+
+function executeMove(tr,tc){
+    if(gameOver||gameWon) return;
+    moveHistory.push({playerPos:{...playerPos}, enemies:enemies.map(e=>({...e,position:{...e.position},patrolPath:e.patrolPath?e.patrolPath.map(p=>({...p})):null, viewIdx:e.viewIdx})), enemyPatrolStates:enemyPatrolStates.map(es=>es?{...es}:null), wormsRemaining:wormsRemaining.map(w=>({...w})), moveCount, dangerCells:dangerCells.map(d=>({...d})), isNewRecord });
+    playerPos.row=tr; playerPos.col=tc; moveCount++; selectedPlayer=false; highlightCells=[];
+    let collected=false; const wi=wormsRemaining.findIndex(w=>w.row===tr&&w.col===tc);
+    if(wi!==-1){ wormsRemaining.splice(wi,1); collected=true; if(isEndless){ endlessScore+=100; updEndlessUI(); } }
+
+    // 死亡检查：脚下红色且非灌木 → 立即失败
+    if(isDanger(playerPos.row, playerPos.col) && cellType(playerPos.row, playerPos.col) !== CELL_BUSH){
+        gameOver=true; dangerCells=[];
+        renderGrid(); updateUI(); updateButtons(); updEndlessUI();
+        statusEl.textContent=t('caught'); flashCell(playerPos.row,playerPos.col,'danger-flash'); Sound.playLose();
+        if(isEndless){
+            box.innerHTML=`<span class="msg-icon">😿</span><h2>${t('caught')}</h2><p>${t('endlessEndScore', endlessWave, endlessScore)}</p><div class="btn-row"><button onclick="resetLevel()">${t('retryThisBtn')}</button><button onclick="exitEndless()">${t('exitEndlessBtn')}</button></div>`;
+        } else {
+            box.innerHTML=`<span class="msg-icon">😿</span><h2>${t('caught')}</h2><div class="btn-row"><button onclick="resetLevel()">${t('retry')}</button><button onclick="hideMessage()">${t('close')}</button></div>`;
+        }
+        overlay.classList.add('active');
+        return;
+    }
+
+    // 胜利检查：安全巢穴且蠕虫已空
+    if(isNestAt(playerPos.row,playerPos.col) && wormsRemaining.length===0){
+        gameWon=true; dangerCells=[]; if(isEndless){ endlessScore+=300; endlessWave++; updEndlessUI(); }
+        const prevBest=(loadRecs())[levelIdx]; const isNew=(prevBest===null||moveCount<prevBest); if(isNew){ const rc=loadRecs(); rc[levelIdx]=moveCount; saveRecs(rc); }
+        isNewRecord=isNew; updBestBadge(); renderGrid(); updateUI(); updateButtons(); updEndlessUI();
+        if(isEndless){
+            let newLvl = null;
+            for(let retry=0; retry<10; retry++){ newLvl = genLevel(rnd(5,9),rnd(5,9)); if(newLvl) break; }
+            if(!newLvl){ alert('生成失败，返回菜单'); exitEndless(); return; }
+            levels[levelIdx]=newLvl; statusEl.textContent=t('statusWin'); Sound.playWin();
+            setTimeout(()=>{ loadLevel(levelIdx); },600);
+        } else {
+            statusEl.textContent=isNew?t('newRec'):t('statusWin'); flashCell(playerPos.row,playerPos.col,isNew?'new-record-flash':'win-flash'); Sound.playWin();
+            if(levelIdx<levels.length-1) setTimeout(()=>{ loadLevel(levelIdx+1); },800);
+            else setTimeout(()=>{ box.innerHTML=`<span class="msg-icon">🏆</span><h2>全部通关！</h2><div class="btn-row"><button class="btn endless" onclick="showDifficulty()">${t('endless')}</button><button onclick="backToMenu()">${t('menu')}</button></div>`; overlay.classList.add('active'); },500);
+        }
+        return;
+    }
+
+    if(collected) Sound.playCollect(); else Sound.playMove();
+    renderGrid(); updateUI(); statusEl.textContent=t('statusStart'); statusEl.style.color='#2e7d32';
+    setTimeout(()=>{
+        enemyTurn(); dangerCells=calcDanger(); renderGrid(); updateUI(); updateButtons(); updEndlessUI();
+        // 敌人行动后二次死亡检查
+        if(!gameOver && isDanger(playerPos.row, playerPos.col) && cellType(playerPos.row, playerPos.col) !== CELL_BUSH){
+            gameOver=true;
+            statusEl.textContent=t('caught'); flashCell(playerPos.row,playerPos.col,'danger-flash'); Sound.playLose();
+            if(isEndless){
+                box.innerHTML=`<span class="msg-icon">😿</span><h2>${t('caught')}</h2><p>${t('endlessEndScore', endlessWave, endlessScore)}</p><div class="btn-row"><button onclick="resetLevel()">${t('retryThisBtn')}</button><button onclick="exitEndless()">${t('exitEndlessBtn')}</button></div>`;
+            } else {
+                box.innerHTML=`<span class="msg-icon">😿</span><h2>${t('caught')}</h2><div class="btn-row"><button onclick="resetLevel()">${t('retry')}</button><button onclick="hideMessage()">${t('close')}</button></div>`;
+            }
+            overlay.classList.add('active');
+        }
+        if(!gameOver){ const rem=wormsRemaining.length; statusEl.textContent=rem>0?`🎯剩${rem}只`:'🎯回巢！'; statusEl.style.color='#2e7d32'; }
+    },350);
+}
+
+function enemyTurn(){
+    for(let i=0;i<enemies.length;i++) if(enemies[i].isSentinel&&!gameOver) checkSentinel(enemies[i]);
+    if(gameOver) return;
+    for(let i=0;i<enemies.length;i++) if(!enemies[i].isSentinel&&enemies[i].patrolPath&&!gameOver) movePatrol(i,enemies[i]);
+    if(gameOver) return;
+    for(let i=0;i<enemies.length;i++){ const e=enemies[i]; if(e.isSentinel){ e.viewIdx = (e.viewIdx + 1) % e.viewPath.length; } }
+    for(const e of enemies) if(!gameOver&&e.position.row===playerPos.row&&e.position.col===playerPos.col){ gameOver=true; return; }
+}
+
+function checkSentinel(en){
+    const dirs = [[-1,0],[0,1],[1,0],[0,-1]];
+    const [dr,dc] = dirs[en.viewPath[en.viewIdx]];
+    for(let step=1; step<=en.viewRange; step++){
+        const nr = en.position.row + dr*step, nc = en.position.col + dc*step;
+        if(nr===playerPos.row && nc===playerPos.col){
+            if(cellType(playerPos.row,playerPos.col)!==CELL_BUSH){ gameOver=true; return; }
+        }
+        if(cellType(nr,nc)===CELL_WALL || cellType(nr,nc)===CELL_BUSH) break;
+    }
+}
+function movePatrol(i,en){ const s=enemyPatrolStates[i]; const p=en.patrolPath; let ni=s.pathIndex+s.direction; if(ni>=p.length){s.direction=-1;ni=p.length-2;}else if(ni<0){s.direction=1;ni=1;} s.pathIndex=ni; en.position={...p[ni]}; }
+function flashCell(r,c,cls){ const cell=gridEl.querySelector(`[data-row="${r}"][data-col="${c}"]`); if(cell){ cell.classList.add(cls); setTimeout(()=>cell.classList.remove(cls),600); } }
+
+function undoMove(){ if(gameOver||gameWon||moveHistory.length===0) return; const s=moveHistory.pop(); playerPos=s.playerPos; enemies=s.enemies; enemyPatrolStates=s.enemyPatrolStates; wormsRemaining=s.wormsRemaining; moveCount=s.moveCount; dangerCells=s.dangerCells||[]; isNewRecord=s.isNewRecord||false; gameOver=gameWon=selectedPlayer=false; highlightCells=[]; updBestBadge(); renderGrid(); updateUI(); updateButtons(); updEndlessUI(); statusEl.textContent='↩已撤销'; setTimeout(()=>{ if(!gameOver) statusEl.textContent=t('statusStart'); },1200); }
+function hideMessage(){ overlay.classList.remove('active'); }
+
+function exitEndless(){ isEndless=false; endlessScore=0; endlessWave=1; levels=[...baseLevels]; levelIdx=0; backToMenu(); }
+
+// ========== 关卡生成器 ==========
+function rnd(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=rnd(0,i); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function genMaze(g,w=3){ const rs=g.length,cs=g[0].length; for(let r=0;r<rs;r++){g[r][0]=w;g[r][cs-1]=w;} for(let c=0;c<cs;c++){g[0][c]=w;g[rs-1][c]=w;} function div(r1,c1,r2,c2){ if(r2-r1<2||c2-c1<2) return; const hor=Math.random()<0.5; if(hor){ const dr=rnd(r1+1,r2-1), pc=rnd(c1+1,c2-1); for(let c=c1;c<=c2;c++) if(c!==pc) g[dr][c]=w; div(r1,c1,dr-1,c2); div(dr+1,c1,r2,c2); } else { const dc=rnd(c1+1,c2-1), pr=rnd(r1+1,r2-1); for(let r=r1;r<=r2;r++) if(r!==pr) g[r][dc]=w; div(r1,c1,r2,dc-1); div(r1,dc+1,r2,c2); } } div(1,1,rs-2,cs-2); for(let i=0;i<Math.floor(rs*cs*0.05);i++){ const r=rnd(1,rs-2),c=rnd(1,cs-2); if(g[r][c]===w) g[r][c]=0; } }
+
+function aiCanWin(level, maxAttempts = 40) {
+    const { grid, playerStart, nestPos, worms, enemies: enDefs } = level;
+    const rows = grid.length, cols = grid[0].length;
+    const initEnemies = enDefs.map((ed) => {
+        if(ed.type==='hawk'){
+            return { type:'hawk', position:{...ed.position}, isSentinel:true, viewType:'rotate', viewPath:[0,1,2,3], viewIdx:0, viewRange:2 };
+        } else {
+            return { type:ed.type, position:{...ed.patrolPath[ed.startIndex||0]}, patrolPath:ed.patrolPath.map(p=>({...p})), isSentinel:false };
+        }
+    });
+    const initStates = enDefs.map((ed) => ed.type==='hawk' ? null : { pathIndex:ed.startIndex||0, direction:1 });
+    const allWorms = worms.map((w,i) => ({...w, idx:i}));
+    const targetMask = (1<<allWorms.length)-1;
+    const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+    for (let att=0; att<maxAttempts; att++) {
+        let pos = {...playerStart};
+        let enemies = initEnemies.map(e=>({...e, position:{...e.position}, patrolPath:e.patrolPath?e.patrolPath.map(p=>({...p})):null, viewIdx:e.viewIdx}));
+        let states = initStates.map(s=>s?{...s}:null);
+        let collected = 0, steps = 0; const maxSteps = 500;
+        while (steps < maxSteps) {
+            if (pos.row===nestPos.row && pos.col===nestPos.col && collected===targetMask) return true;
+            const danger = new Set();
+            for (let i=0; i<enemies.length; i++) {
+                const en = enemies[i];
+                if (en.isSentinel) {
+                    const dirsH = [[-1,0],[0,1],[1,0],[0,-1]];
+                    const [dr,dc] = dirsH[en.viewPath[en.viewIdx]];
+                    for(let step=1; step<=en.viewRange; step++){
+                        const nr = en.position.row+dr*step, nc = en.position.col+dc*step;
+                        if(nr<0||nr>=rows||nc<0||nc>=cols) break;
+                        if(grid[nr][nc]===CELL_WALL || grid[nr][nc]===CELL_BUSH) break;
+                        danger.add(`${nr},${nc}`);
                     }
-                },
-                beep(freq, duration, type = 'square', vol = 0.08) {
-                    if (!this.ctx) return;
-                    const osc = this.ctx.createOscillator();
-                    const gain = this.ctx.createGain();
-                    osc.type = type;
-                    osc.frequency.value = freq;
-                    gain.gain.setValueAtTime(vol, this.ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    osc.start();
-                    osc.stop(this.ctx.currentTime + duration);
-                },
-                playMove() { this.beep(600, 0.08, 'square', 0.06); },
-                playCollect() { this.beep(1200, 0.1, 'square', 0.07); setTimeout(() => this.beep(1500, 0.1, 'square', 0.07), 60); },
-                playWin() {
-                    this.beep(523, 0.12, 'square', 0.08);
-                    setTimeout(() => this.beep(659, 0.12, 'square', 0.08), 120);
-                    setTimeout(() => this.beep(784, 0.18, 'square', 0.08), 240);
-                },
-                playLose() { this.beep(150, 0.4, 'sawtooth', 0.1); },
-                playLevelStart() {
-                    this.beep(440, 0.1, 'square', 0.05);
-                    setTimeout(() => this.beep(660, 0.1, 'square', 0.05), 100);
-                    setTimeout(() => this.beep(880, 0.12, 'square', 0.06), 200);
-                },
-                playFirstLevel() {
-                    this.beep(330, 0.08, 'triangle', 0.05);
-                    setTimeout(() => this.beep(440, 0.08, 'triangle', 0.05), 80);
-                    setTimeout(() => this.beep(550, 0.08, 'triangle', 0.05), 160);
-                    setTimeout(() => this.beep(660, 0.12, 'triangle', 0.06), 240);
-                }
-            };
-
-            const CELL_EMPTY = 0, CELL_BUSH = 1, CELL_NEST = 2, CELL_WALL = 3;
-
-            // 保留的5关
-            const levels = [
-                {
-                    name: "林间空地", rows: 3, cols: 6, playerStart: { row: 1, col: 0 }, nestPos: { row: 1, col: 5 },
-                    worms: [{ row: 1, col: 3 }],
-                    grid: [[0,0,0,0,0,0],[0,0,0,0,0,2],[0,0,1,0,0,0]],
-                    enemies: [{ type: 'cat', patrolPath: [{ row: 0, col: 2 },{ row: 1, col: 2 }], startIndex: 0 }]
-                },
-                {
-                    name: "双猫守卫", rows: 6, cols: 6, playerStart: { row: 5, col: 5 }, nestPos: { row: 0, col: 0 },
-                    worms: [{ row: 4, col: 4 },{ row: 1, col: 3 },{ row: 4, col: 1 }],
-                    grid: [[2,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,1,0,0],[0,1,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]],
-                    enemies: [
-                        { type: 'cat', patrolPath: [{ row: 3, col: 3 },{ row: 2, col: 3 },{ row: 1, col: 3 },{ row: 0, col: 3 }], startIndex: 0 },
-                        { type: 'cat', patrolPath: [{ row: 0, col: 1 },{ row: 1, col: 1 },{ row: 2, col: 1 },{ row: 3, col: 1 },{ row: 4, col: 1 }], startIndex: 1 }
-                    ]
-                },
-                {
-                    name: "鹰眼哨兵", rows: 6, cols: 6, playerStart: { row: 5, col: 0 }, nestPos: { row: 0, col: 5 },
-                    worms: [{ row: 1, col: 4 },{ row: 2, col: 0 },{ row: 3, col: 2 }],
-                    grid: [[0,0,0,0,0,2],[0,0,0,0,0,0],[0,0,0,0,1,0],[1,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]],
-                    enemies: [{type:"hawk",position:{row:2,col:3}},{type:"cat",patrolPath:[{row:0,col:0},{row:1,col:0},{row:2,col:0},{row:3,col:0},{row:4,col:0},{row:5,col:0}],startIndex:0}]
-                },
-                {
-                    name: "蜿蜒蛇道", rows: 7, cols: 4, playerStart: { row: 4, col: 3 }, nestPos: { row: 0, col: 1 },
-                    worms: [{ row: 2, col: 2 },{ row: 3, col: 0 },{ row: 4, col: 2 },{ row: 5, col: 1 }],
-                    grid: [[0,2,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]],
-                    enemies: [
-                        {type:'snake',patrolPath:[{row:0,col:0},{row:1,col:0},{row:2,col:0},{row:3,col:0},{row:4,col:0},{row:5,col:0},{row:6,col:0}],startIndex:0},
-                        {type:'snake',patrolPath:[{row:6,col:1},{row:5,col:1},{row:4,col:1},{row:3,col:1},{row:2,col:1},{row:1,col:1},{row:0,col:1}],startIndex:0},
-                        {type:'snake',patrolPath:[{row:0,col:2},{row:1,col:2},{row:2,col:2},{row:3,col:2},{row:4,col:2},{row:5,col:2},{row:6,col:2}],startIndex:0},
-                        {type:'snake',patrolPath:[{row:6,col:3},{row:5,col:3},{row:4,col:3},{row:3,col:3},{row:2,col:3},{row:1,col:3},{row:0,col:3}],startIndex:0}
-                    ]
-                },
-                {
-                    name: "花园迷宫", rows: 8, cols: 8, playerStart: { row: 7, col: 0 }, nestPos: { row: 7, col: 2 },
-                    worms: [{ row: 7, col: 4 },{ row: 2, col: 1 },{ row: 0, col: 3 },{ row: 1, col: 7 },{ row: 6, col: 7 },{ row: 4, col: 0 }],
-                    grid: [[1,0,0,0,0,1,0,0],[1,0,1,1,1,1,0,0],[0,0,1,0,0,0,0,0],[0,1,1,1,0,1,1,1],[0,0,0,0,0,1,0,0],[0,0,0,0,0,0,0,0],[0,1,0,1,1,1,0,0],[0,1,2,0,0,1,0,0]],
-                    enemies: [
-                        {type:"hawk",position:{row:2,col:4}},{type:"hawk",position:{row:4,col:6}},{type:"hawk",position:{row:5,col:3}},
-                        {type:"cat",patrolPath:[{row:5,col:0},{row:4,col:0},{row:3,col:0},{row:2,col:0},{row:1,col:0}],startIndex:0},
-                        {type:"cat",patrolPath:[{row:5,col:4},{row:4,col:4},{row:3,col:4}],startIndex:0},
-                        {type:"snake",patrolPath:[{row:7,col:7},{row:6,col:7},{row:5,col:7},{row:5,col:6},{row:6,col:6},{row:7,col:6}],startIndex:0},
-                        {type:"snake",patrolPath:[{row:2,col:6},{row:2,col:7},{row:1,col:7},{row:0,col:7},{row:0,col:6},{row:1,col:6}],startIndex:0}
-                    ]
-                }
-            ];
-
-            const STORAGE_KEY = 'bird_nest_v16';
-            function loadRecords() { try{ const d=localStorage.getItem(STORAGE_KEY); if(d){ const r=JSON.parse(d); if(Array.isArray(r)&&r.length===levels.length) return r.map(x=>(typeof x==='number'&&x>0)?x:null); } }catch(e){} return levels.map(()=>null); }
-            function saveRecords(r){ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(r)); }catch(e){} }
-            function getBest(i){ return loadRecords()[i]||null; }
-            function updateBest(i,steps){ const r=loadRecords(); const c=r[i]; if(c===null||steps<c){ r[i]=steps; saveRecords(r); return true; } return false; }
-
-            let levelIdx=0, playerPos, enemies, wormsRemaining, moveHistory=[], moveCount,
-                selectedPlayer=false, gameOver=false, gameWon=false, highlightCells=[],
-                enemyPatrolStates=[], dangerCells=[], gameStarted=false, isNewRecord=false;
-
-            const elements = {
-                grid: document.getElementById('gameGrid'), moveCount: document.getElementById('moveCount'),
-                wormLeft: document.getElementById('wormLeft'), status: document.getElementById('statusText'),
-                levelNum: document.getElementById('levelNum'), totalLevels: document.getElementById('totalLevels'),
-                levelName: document.getElementById('levelName'), bestBadge: document.getElementById('bestRecordBadge'),
-                bestText: document.getElementById('bestRecordText'), overlay: document.getElementById('messageOverlay'),
-                box: document.getElementById('messageBox'), btnUndo: document.getElementById('btnUndo'),
-                btnPrev: document.getElementById('btnPrev'), btnNext: document.getElementById('btnNext')
-            };
-
-            function updateBestBadge(){ const b=getBest(levelIdx); if(b!==null){ elements.bestBadge.style.display=''; elements.bestText.textContent=b; } else elements.bestBadge.style.display='none'; }
-
-            function loadLevel(index){
-                if(index<0||index>=levels.length) return;
-                levelIdx=index; const L=levels[index];
-                playerPos={...L.playerStart}; moveCount=0; gameOver=gameWon=selectedPlayer=false;
-                moveHistory=[]; highlightCells=[]; isNewRecord=false;
-                wormsRemaining=L.worms.map(w=>({...w}));
-                enemies=[]; enemyPatrolStates=[];
-                L.enemies.forEach((ed,i)=>{
-                    if(ed.type==='hawk'){ enemies.push({type:'hawk',position:{...ed.position},isSentinel:true}); enemyPatrolStates.push(null); }
-                    else if(ed.patrolPath&&ed.patrolPath.length>0){ const si=ed.startIndex||0; enemies.push({type:ed.type, position:{...ed.patrolPath[si]}, patrolPath:ed.patrolPath.map(p=>({...p})), isSentinel:false}); enemyPatrolStates.push({pathIndex:si, direction:1}); }
-                });
-                dangerCells=calcDanger();
-                updateBestBadge(); updateUI(); renderGrid(); updateButtons();
-                elements.status.textContent='🎯抓蠕虫回巢'; elements.status.style.color='#2e7d32';
-                elements.levelNum.textContent=index+1;
-                elements.totalLevels.textContent=levels.length;
-                elements.levelName.textContent=L.name;
-                if(gameStarted){
-                    if(index===0) Sound.playFirstLevel();
-                    else Sound.playLevelStart();
+                } else if (en.patrolPath) {
+                    danger.add(`${en.position.row},${en.position.col}`);
+                    if (en.type === 'cat') { const st = states[i]; if (st) { const p = en.patrolPath; let ni = st.pathIndex + st.direction; if (ni >= p.length) ni = p.length - 2; else if (ni < 0) ni = 1; if (p[ni]) danger.add(`${p[ni].row},${p[ni].col}`); } }
                 }
             }
-
-            function getLevel(){ return levels[levelIdx]; }
-            function cellType(r,c){ const L=getLevel(); if(r<0||r>=L.rows||c<0||c>=L.cols) return CELL_WALL; return L.grid[r][c]; }
-            function enemyAt(r,c){ return enemies.find(e=>e.position.row===r&&e.position.col===c); }
-            function isPlayerAt(r,c){ return playerPos.row===r&&playerPos.col===c; }
-            function isNestAt(r,c){ const L=getLevel(); return L.nestPos.row===r&&L.nestPos.col===c; }
-            function isWormAt(r,c){ return wormsRemaining.some(w=>w.row===r&&w.col===c); }
-            function isDanger(r,c){ return dangerCells.some(d=>d.row===r&&d.col===c); }
-
-            function getPatrolPathCells(){
-                const cells = new Set();
-                enemies.forEach(enemy => {
-                    if(enemy.patrolPath && enemy.patrolPath.length > 0){
-                        enemy.patrolPath.forEach(p => cells.add(`${p.row},${p.col}`));
-                    }
-                });
-                return cells;
+            const moves = [];
+            for (const [dr,dc] of dirs) {
+                const nr = pos.row+dr, nc = pos.col+dc;
+                if (nr<0||nr>=rows||nc<0||nc>=cols) continue;
+                if (grid[nr][nc]===CELL_WALL) continue;
+                if (enemies.some(e=>e.position.row===nr&&e.position.col===nc)) continue;
+                if (danger.has(`${nr},${nc}`)) continue;
+                moves.push({row:nr, col:nc});
             }
+            if (moves.length===0) break;
+            const targets = allWorms.filter((w) => !(collected & (1<<w.idx)));
+            if (targets.length===0) targets.push(nestPos);
+            let bestMove = moves[0], bestDist = Infinity;
+            for (const m of moves) { let minDist = Infinity; for (const t of targets) { const d = Math.abs(m.row-t.row)+Math.abs(m.col-t.col); if (d<minDist) minDist = d; } if (minDist + Math.random()*2 < bestDist) { bestDist = minDist; bestMove = m; } }
+            pos = bestMove;
+            const wormIdx = allWorms.findIndex((w) => !(collected & (1<<w.idx)) && w.row===pos.row && w.col===pos.col);
+            if (wormIdx!==-1) collected |= (1<<allWorms[wormIdx].idx);
+            const newEnemies = enemies.map(e=>({...e, position:{...e.position}, patrolPath:e.patrolPath?e.patrolPath.map(p=>({...p})):null}));
+            const newStates = states.map(s=>s?{...s}:null);
+            for (let i=0; i<newEnemies.length; i++) { const en = newEnemies[i]; if (!en.isSentinel && en.patrolPath && en.patrolPath.length>0) { const s = newStates[i], p = en.patrolPath; let ni = s.pathIndex + s.direction; if (ni >= p.length) { s.direction = -1; ni = p.length-2; } else if (ni < 0) { s.direction = 1; ni = 1; } if (p[ni]) { s.pathIndex = ni; en.position = {...p[ni]}; } } if (en.isSentinel) { en.viewIdx = (en.viewIdx + 1) % en.viewPath.length; } }
+            if (newEnemies.some(e=>e.position.row===pos.row&&e.position.col===pos.col)) break;
+            for (const en of newEnemies) { if (en.isSentinel) { const dirsH = [[-1,0],[0,1],[1,0],[0,-1]]; const [dr,dc] = dirsH[en.viewPath[en.viewIdx]]; for(let step=1; step<=en.viewRange; step++){ const nr = en.position.row+dr*step, nc = en.position.col+dc*step; if(nr===pos.row && nc===pos.col && grid[pos.row][pos.col]!==CELL_BUSH){ pos=null; break; } } } }
+            if (!pos) break;
+            enemies = newEnemies; states = newStates;
+            steps++;
+        }
+    }
+    return false;
+}
 
-            function calcDanger(){
-                const dangers=[]; const L=getLevel();
-                enemies.forEach((enemy,i)=>{
-                    if(enemy.isSentinel){
-                        [{dr:-1,dc:0},{dr:1,dc:0},{dr:0,dc:-1},{dr:0,dc:1}].forEach(d=>{
-                            const nr=enemy.position.row+d.dr, nc=enemy.position.col+d.dc;
-                            if(nr>=0&&nr<L.rows&&nc>=0&&nc<L.cols && cellType(nr,nc)!==CELL_BUSH && cellType(nr,nc)!==CELL_WALL) dangers.push({row:nr,col:nc});
-                        });
-                    } else if(enemy.patrolPath && enemy.patrolPath.length>0){
-                        dangers.push({row:enemy.position.row, col:enemy.position.col});
-                        if(enemy.type === 'cat'){
-                            const state = enemyPatrolStates[i];
-                            if(state){
-                                const path = enemy.patrolPath;
-                                let nextIdx = state.pathIndex + state.direction;
-                                if(nextIdx >= path.length) nextIdx = path.length - 2;
-                                else if(nextIdx < 0) nextIdx = 1;
-                                dangers.push({row:path[nextIdx].row, col:path[nextIdx].col});
-                            }
-                        }
-                    }
-                });
-                const uniq=[], seen=new Set();
-                dangers.forEach(d=>{ const k=`${d.row},${d.col}`; if(!seen.has(k)){ seen.add(k); uniq.push(d); } });
-                return uniq;
-            }
-
-            function renderGrid(){
-                const L=getLevel();
-                const patrolCells = getPatrolPathCells();
-                elements.grid.innerHTML='';
-                elements.grid.style.gridTemplateColumns=`repeat(${L.cols}, var(--cell-size))`;
-                elements.grid.style.gridTemplateRows=`repeat(${L.rows}, var(--cell-size))`;
-                for(let r=0;r<L.rows;r++){
-                    for(let c=0;c<L.cols;c++){
-                        const cell=document.createElement('div'); cell.classList.add('cell');
-                        cell.dataset.row=r; cell.dataset.col=c;
-                        const ct=cellType(r,c); const alt=(r+c)%2===0;
-                        if(ct===CELL_WALL){ cell.classList.add('wall'); }
-                        else{
-                            if(ct===CELL_BUSH) cell.classList.add('bush');
-                            else if(ct===CELL_NEST||isNestAt(r,c)) cell.classList.add('nest');
-                            else if(alt) cell.classList.add('alt');
-                            if(patrolCells.has(`${r},${c}`)) cell.classList.add('patrol-path');
-                            if(isDanger(r,c)) cell.classList.add('danger-zone');
-                        }
-                        const eh=enemyAt(r,c);
-                        if(eh){ const ent=document.createElement('span'); ent.classList.add('entity',`enemy-${eh.type}`); ent.textContent=eh.type==='cat'?'🐱':eh.type==='hawk'?'🦅':'🐍'; cell.appendChild(ent); }
-                        if(isWormAt(r,c)){ const ent=document.createElement('span'); ent.classList.add('entity','worm'); ent.textContent='🪱'; cell.appendChild(ent); }
-                        if(isPlayerAt(r,c)&&!gameWon){ const ent=document.createElement('span'); ent.classList.add('entity','player'); ent.textContent='🐦'; cell.appendChild(ent); }
-                        if(highlightCells.some(h=>h.row===r&&h.col===c)) cell.classList.add('highlight-move');
-                        if(selectedPlayer&&isPlayerAt(r,c)) cell.classList.add('player-selected');
-                        cell.addEventListener('click',()=>onCellClick(r,c));
-                        elements.grid.appendChild(cell);
-                    }
+function genLevel(rows,cols){
+    for(let att=0;att<200;att++){
+        let grid=Array(rows).fill().map(()=>Array(cols).fill(0)); genMaze(grid,3);
+        let removeRate=0.1; if(difficulty==='easy') removeRate=0.2; else removeRate=0.1;
+        const removeExtra=Math.floor(rows*cols*removeRate); for(let i=0;i<removeExtra;i++){ const r=rnd(1,rows-2),c=rnd(1,cols-2); if(grid[r][c]===3) grid[r][c]=0; }
+        const pass=()=>{ const a=[]; for(let r=1;r<rows-1;r++) for(let c=1;c<cols-1;c++) if(grid[r][c]!==3) a.push({r,c}); return a; };
+        const near=(p)=>{ if(grid[p.r]?.[p.c]!==3) return p; for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){ const nr=p.r+dr,nc=p.c+dc; if(nr>0&&nr<rows-1&&nc>0&&nc<cols-1&&grid[nr][nc]!==3) return{r:nr,c:nc}; } return p; };
+        const st=near({r:rnd(1,rows-2),c:rnd(1,cols-2)}); const ne=near({r:rnd(1,rows-2),c:rnd(1,cols-2)});
+        if(Math.abs(st.r-ne.r)+Math.abs(st.c-ne.c)<3) continue;
+        let wormCount=2; if(difficulty==='easy') wormCount=rnd(1,2); else wormCount=rnd(2,3);
+        const cands=pass().filter(c=>!(c.r===st.r&&c.c===st.c)&&!(c.r===ne.r&&c.c===ne.c));
+        if(cands.length<wormCount+2) continue;
+        const worms=shuffle(cands).slice(0,wormCount); grid[ne.r][ne.c]=2;
+        let bushCount=2; if(difficulty==='easy') bushCount=rnd(2,3); else bushCount=rnd(0,2);
+        const bushCands=shuffle(pass().filter(c=>!(c.r===st.r&&c.c===st.c)&&!(c.r===ne.r&&c.c===ne.c)&&!worms.some(w=>w.r===c.r&&w.c===c.c)));
+        for(let i=0;i<Math.min(bushCount,bushCands.length);i++) grid[bushCands[i].r][bushCands[i].c]=1;
+        let patrolCount=1,hawkCount=0; if(difficulty==='easy'){ patrolCount=1;hawkCount=0; } else{ patrolCount=rnd(1,2);hawkCount=patrolCount<2?rnd(0,1):0; }
+        const enemies=[]; const free=pass().filter(c=>!(c.r===st.r&&c.c===st.c)&&!(c.r===ne.r&&c.c===ne.c)&&!worms.some(w=>w.r===c.r&&w.c===c.c)&&grid[c.r][c.c]!==1);
+        const dirs = [[0,1],[1,0],[0,-1],[-1,0]]; const existingPaths = [];
+        for(let i=0;i<patrolCount;i++){
+            for(let tryCount=0; tryCount<10; tryCount++){
+                const type=Math.random()<0.5?'cat':'snake'; const plen=rnd(5,8); let path=[]; let cur=shuffle(free)[0]; path.push({row:cur.r,col:cur.c});
+                let dirIdx = rnd(0,3);
+                for(let s=1;s<plen;s++){
+                    const nbs=[]; for(let d=0;d<4;d++){ const [dr,dc]=dirs[d]; const nr=cur.r+dr,nc=cur.c+dc; if(nr>0&&nr<rows-1&&nc>0&&nc<cols-1&&grid[nr][nc]!==3) nbs.push({r:nr,c:nc,dir:d}); }
+                    if(nbs.length===0) break;
+                    if(Math.random()<0.8 && nbs.some(n=>n.dir===dirIdx)){ const next = nbs.find(n=>n.dir===dirIdx) || nbs[rnd(0,nbs.length-1)]; cur = {r:next.r,c:next.c}; dirIdx = next.dir; }
+                    else { const filtered = nbs.filter(n=>n.dir!==(dirIdx+2)%4); if(filtered.length===0) break; const next = filtered[rnd(0,filtered.length-1)]; cur = {r:next.r,c:next.c}; dirIdx = next.dir; }
+                    path.push({row:cur.r,col:cur.c});
                 }
+                if(path.length<2) continue;
+                const newPathSet = new Set(path.map(p=>`${p.row},${p.col}`)); let tooClose = false;
+                for(const ep of existingPaths){ for(const p of path){ if(ep.has(`${p.row},${p.col}`) || [...ep].some(epc => Math.abs(p.row-(+epc.split(',')[0]))+Math.abs(p.col-(+epc.split(',')[1])) <= 1)){ tooClose = true; break; } if(tooClose) break; } }
+                if(!tooClose){ existingPaths.push(newPathSet); enemies.push({type, patrolPath:path, startIndex:0}); break; }
             }
-
-            function updateUI(){ elements.moveCount.textContent=moveCount; elements.wormLeft.textContent=wormsRemaining.length; elements.btnUndo.disabled=moveHistory.length===0||gameOver; }
-            function updateButtons(){ elements.btnPrev.style.display=levelIdx>0?'':'none'; elements.btnNext.style.display=levelIdx<levels.length-1?'':'none'; }
-
-            function isAdjacent(r,c) {
-                return Math.abs(r - playerPos.row) + Math.abs(c - playerPos.col) === 1;
-            }
-
-            function onCellClick(r,c){
-                if(!gameStarted||gameOver||gameWon) return;
-                // 点击高亮可移动格子 → 移动
-                if(highlightCells.some(h=>h.row===r&&h.col===c)){
-                    executeMove(r,c);
-                    return;
+        }
+        for(let i=0;i<Math.min(hawkCount,free.length);i++){
+            const pos=free[rnd(0,free.length-1)];
+            enemies.push({type:'hawk', position:{row:pos.r, col:pos.c}, viewType:'rotate', viewPath:[0,1,2,3], viewRange:2});
+        }
+        const level={name:`随机${rows}x${cols}`,rows,cols,playerStart:{row:st.r,col:st.c},nestPos:{row:ne.r,col:ne.c},worms:worms.map(p=>({row:p.r,col:p.c})),grid,enemies};
+        // 起点安全检查
+        const initDanger=new Set();
+        const initEnemies = enemies.map(e => { if(e.type==='hawk') return { ...e, position:{...e.position}, viewIdx: 0 }; else return { type:e.type, position:e.patrolPath[0], patrolPath:e.patrolPath, isSentinel:false }; });
+        for(let i=0;i<initEnemies.length;i++){
+            const en=initEnemies[i];
+            if(en.isSentinel){
+                const dirsH = [[-1,0],[0,1],[1,0],[0,-1]]; const [dr,dc] = dirsH[en.viewPath[0]];
+                for(let step=1; step<=en.viewRange; step++){
+                    const nr = en.position.row+dr*step, nc = en.position.col+dc*step;
+                    if(nr<0||nr>=rows||nc<0||nc>=cols) break;
+                    if(grid[nr][nc]===CELL_BUSH || grid[nr][nc]===CELL_WALL) break;
+                    initDanger.add(`${nr},${nc}`);
                 }
-                // 点击小鸟自己 → 切换选中
-                if(isPlayerAt(r,c)){
-                    selectedPlayer = !selectedPlayer;
-                    highlightCells = selectedPlayer ? validMoves() : [];
-                    renderGrid();
-                    return;
-                }
-                // 直接点击相邻格子 → 移动（如果合法）
-                if(isAdjacent(r,c)){
-                    if(cellType(r,c) !== CELL_WALL && !enemyAt(r,c)){
-                        executeMove(r,c);
-                        return;
-                    }
-                }
-                // 其他情况：取消选中
-                if(selectedPlayer){
-                    selectedPlayer = false;
-                    highlightCells = [];
-                    renderGrid();
-                }
-            }
+            } else if(en.patrolPath){ initDanger.add(`${en.position.row},${en.position.col}`); if(en.type==='cat'){ const p=en.patrolPath; let ni=1; if(p[ni]) initDanger.add(`${p[ni].row},${p[ni].c}`); } }
+        }
+        let safe=true;
+        for(const[dr,dc] of[[-1,0],[1,0],[0,-1],[0,1]]){ const nr=st.r+dr,nc=st.c+dc; if(nr<0||nr>=rows||nc<0||nc>=cols) continue; if(grid[nr][nc]===CELL_WALL) continue; if(initDanger.has(`${nr},${nc}`)||initDanger.has(`${st.r},${st.c}`)){ safe=false; break; } }
+        if(!safe) continue;
+        if(aiCanWin(level, 40)) return level;
+    }
+    return null;
+}
 
-            function validMoves(){
-                const m=[];
-                [{dr:-1,dc:0},{dr:1,dc:0},{dr:0,dc:-1},{dr:0,dc:1}].forEach(d=>{
-                    const nr=playerPos.row+d.dr, nc=playerPos.col+d.dc;
-                    if(cellType(nr,nc)!==CELL_WALL && !enemyAt(nr,nc)) m.push({row:nr,col:nc});
-                });
-                return m;
-            }
+// 全局函数
+window.showDifficulty = function(){ box.innerHTML = `<h2>${t('difficulty')}</h2><div class="btn-row"><button class="btn" onclick="setDiff('easy')">${t('easy')}</button><button class="btn" onclick="setDiff('normal')" style="border-color:#ff8f00;">${t('normal')}</button></div><button onclick="hideMessage()">${t('cancel')}</button>`; overlay.classList.add('active'); };
+window.setDiff = function(d){ difficulty=d; hideMessage(); startEndless(); };
+window.startNormalGame = function(){ levels=[...baseLevels]; levelIdx=0; isEndless=false; menuDiv.style.display='none'; gameDiv.style.display='flex'; gameStarted=true; Sound.init(); loadLevel(0); };
+function startEndless(){ isEndless=true; endlessScore=0; endlessWave=1; let rl = null; for(let attempt=0; attempt<10; attempt++){ rl = genLevel(rnd(5,9), rnd(5,9)); if(rl) break; } if(!rl){ alert('生成失败，请重试'); return; } levels=[rl]; levelIdx=0; menuDiv.style.display='none'; gameDiv.style.display='flex'; gameStarted=true; Sound.init(); loadLevel(0); }
+window.startEndless = startEndless;
+window.backToMenu = function(){ if(gameStarted && !gameOver && !gameWon && moveHistory.length>0) if(!confirm(t('confirmBack'))) return; gameStarted=gameOver=gameWon=false; isEndless=false; endlessScore=0; endlessWave=1; levels=[...baseLevels]; gameDiv.style.display='none'; menuDiv.style.display='block'; };
+window.showHelp = function(){ box.innerHTML=`<span class="msg-icon">🐦</span><h2>${t('title')}</h2><p>收集所有蠕虫，返回鸟巢！</p><div style="text-align:left;font-size:0.74rem;line-height:1.6;"><div>🎯 目标：收集所有🪱蠕虫，回到🪹鸟巢</div><div>👆 操作：点相邻格移动，或点小鸟看范围</div><div>🟠 橙色格：巡逻路线  🔴 红色格：危险（踏入即死）</div><div>🧱 围墙   🌿 灌木：躲避🦅鹰视线</div><div>🦅 旋转鹰：视野每回合转动</div></div><div class="btn-row"><button onclick="hideMessage()">关闭</button></div>`; overlay.classList.add('active'); };
+window.showRecordsPanel = function(){ const rc=loadRecs(); let rows=''; for(let i=0;i<5;i++){ const b=rc[i]||null; rows+=`<tr><td>${i+1}</td><td>${baseLevels[i].name}</td><td>${b!==null?b+'步':'--'}</td></tr>`; } box.innerHTML=`<span class="msg-icon">📊</span><h2>最佳记录</h2><table class="records-table"><tr><th>#</th><th>关卡</th><th>最少步数</th></tr>${rows}</table><p>记录保存在本地</p><div class="btn-row"><button onclick="hideMessage()">关闭</button><button onclick="clearRecords()">🗑清除</button></div>`; overlay.classList.add('active'); };
+window.clearRecords = function(){ if(confirm('确定清除所有记录吗？')){ saveRecs(baseLevels.map(()=>null)); updBestBadge(); hideMessage(); } };
+window.hideMessage = hideMessage;
+window.takeScreenshot = function(){
+    try{ const level=getLevel(); const rows=level.rows,cols=level.cols; const cellSize=60; const canvas=document.createElement('canvas'); canvas.width=cols*cellSize; canvas.height=rows*cellSize; const ctx=canvas.getContext('2d');
+        for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){ const x=c*cellSize,y=r*cellSize; const ct=cellType(r,c); if(ct===CELL_WALL) ctx.fillStyle='#5d4037'; else if(ct===CELL_BUSH) ctx.fillStyle='#2e7d32'; else if(ct===CELL_NEST||isNestAt(r,c)) ctx.fillStyle='#ffe082'; else if((r+c)%2===0) ctx.fillStyle='#b9dbbc'; else ctx.fillStyle='#c8e6c9'; ctx.fillRect(x,y,cellSize,cellSize); const eh=enemyAt(r,c); if(eh){ ctx.font=`${cellSize*0.7}px Arial`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(eh.type==='cat'?'🐱':eh.type==='hawk'?'🦅':'🐍',x+cellSize/2,y+cellSize/2); } if(isWormAt(r,c)){ ctx.font=`${cellSize*0.7}px Arial`; ctx.fillText('🪱',x+cellSize/2,y+cellSize/2); } if(isPlayerAt(r,c)&&!gameWon){ ctx.font=`${cellSize*0.8}px Arial`; ctx.fillText('🐦',x+cellSize/2,y+cellSize/2); } }
+        canvas.toBlob(blob=>{ const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`bird-nest-${Date.now()}.png`; a.click(); URL.revokeObjectURL(url); });
+    }catch(e){ alert('截图失败'); }
+};
 
-            function executeMove(tr,tc){
-                if(gameOver||gameWon) return;
-                moveHistory.push({
-                    playerPos:{...playerPos}, enemies:enemies.map(e=>({...e,position:{...e.position},patrolPath:e.patrolPath?e.patrolPath.map(p=>({...p})):null})),
-                    enemyPatrolStates:enemyPatrolStates.map(es=>es?{...es}:null), wormsRemaining:wormsRemaining.map(w=>({...w})),
-                    moveCount, dangerCells:dangerCells.map(d=>({...d})), isNewRecord
-                });
-                playerPos.row=tr; playerPos.col=tc; moveCount++; selectedPlayer=false; highlightCells=[];
-                let wormCollected = false;
-                const wi=wormsRemaining.findIndex(w=>w.row===tr&&w.col===tc);
-                if(wi!==-1) { wormsRemaining.splice(wi,1); wormCollected = true; }
+window.resetLevel = ()=>{ hideMessage(); loadLevel(levelIdx); };
+window.nextLevel = ()=>{ if(!isEndless&&levelIdx<levels.length-1){ hideMessage(); loadLevel(levelIdx+1); } };
+window.prevLevel = ()=>{ if(!isEndless&&levelIdx>0){ hideMessage(); loadLevel(levelIdx-1); } };
+window.undoMove = undoMove;
+window.exitEndless = exitEndless;
 
-                if(isNestAt(playerPos.row,playerPos.col) && wormsRemaining.length===0){
-                    gameWon=true; dangerCells=[];
-                    const prevBest=getBest(levelIdx), isNew=updateBest(levelIdx,moveCount);
-                    isNewRecord=isNew; updateBestBadge();
-                    renderGrid(); updateUI(); updateButtons();
-                    elements.status.textContent=isNew?'🏆新纪录！':'🎉通关！';
-                    flashCell(playerPos.row,playerPos.col,isNew?'new-record-flash':'win-flash');
-                    Sound.playWin();
-                    setTimeout(()=>showWinMsg(isNew,prevBest),500);
-                    return;
-                }
+gridEl.addEventListener('touchstart',e=>{ if(e.touches.length===1){ window._tx=e.touches[0].clientX; window._ty=e.touches[0].clientY; } },{passive:true});
+gridEl.addEventListener('touchmove',e=>{ e.preventDefault(); },{passive:false});
+gridEl.addEventListener('touchend',e=>{ if(!gameStarted||gameOver||gameWon) return; const dx=(e.changedTouches[0]?.clientX||window._tx)-window._tx, dy=(e.changedTouches[0]?.clientY||window._ty)-window._ty; if(Math.abs(dx)<30&&Math.abs(dy)<30) return; let dr=0,dc=0; if(Math.abs(dx)>Math.abs(dy)) dc=dx>0?1:-1; else dr=dy>0?1:-1; const nr=playerPos.row+dr, nc=playerPos.col+dc; if(cellType(nr,nc)!==CELL_WALL){ e.preventDefault(); executeMove(nr,nc); } });
+document.addEventListener('keydown',e=>{ if(!gameStarted||gameOver||gameWon||overlay.classList.contains('active')) return; let dr=0,dc=0; if(e.key==='ArrowUp'||e.key==='w') dr=-1; else if(e.key==='ArrowDown'||e.key==='s') dr=1; else if(e.key==='ArrowLeft'||e.key==='a') dc=-1; else if(e.key==='ArrowRight'||e.key==='d') dc=1; else if(e.key==='r'||e.key==='R'){ resetLevel(); return; } else if((e.key==='z'||e.key==='Z')&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); undoMove(); return; } else return; e.preventDefault(); const nr=playerPos.row+dr, nc=playerPos.col+dc; if(cellType(nr,nc)!==CELL_WALL) executeMove(nr,nc); });
 
-                if(isDanger(playerPos.row, playerPos.col)){
-                    gameOver=true; dangerCells=[];
-                    renderGrid(); updateUI(); updateButtons();
-                    elements.status.textContent='💀被抓住了';
-                    flashCell(playerPos.row,playerPos.col,'danger-flash');
-                    Sound.playLose();
-                    setTimeout(()=>showLoseMsg(),400);
-                    return;
-                }
-
-                if(wormCollected) Sound.playCollect();
-                else Sound.playMove();
-
-                renderGrid(); updateUI(); elements.status.textContent='👀敌人行动...';
-                setTimeout(()=>{
-                    enemyTurn(); dangerCells=calcDanger(); renderGrid(); updateUI(); updateButtons();
-                    if(gameOver){ elements.status.textContent='💀被抓住了'; flashCell(playerPos.row,playerPos.col,'danger-flash'); Sound.playLose(); setTimeout(()=>showLoseMsg(),400); }
-                    else{ const rem=wormsRemaining.length; elements.status.textContent=rem>0?`🎯剩${rem}蠕虫`:'🎯回巢！'; elements.status.style.color='#2e7d32'; }
-                },350);
-            }
-
-            function enemyTurn(){
-                for(let i=0;i<enemies.length;i++) if(enemies[i].isSentinel&&!gameOver) checkSentinel(enemies[i]);
-                if(gameOver) return;
-                for(let i=0;i<enemies.length;i++) if(!enemies[i].isSentinel&&enemies[i].patrolPath&&!gameOver) movePatrol(i,enemies[i]);
-                if(gameOver) return;
-                for(const e of enemies) if(!gameOver&&e.position.row===playerPos.row&&e.position.col===playerPos.col){ gameOver=true; return; }
-            }
-
-            function checkSentinel(enemy){
-                [{dr:-1,dc:0},{dr:1,dc:0},{dr:0,dc:-1},{dr:0,dc:1}].forEach(d=>{
-                    if(enemy.position.row+d.dr===playerPos.row&&enemy.position.col+d.dc===playerPos.col){
-                        if(cellType(playerPos.row,playerPos.col)!==CELL_BUSH) gameOver=true;
-                    }
-                });
-            }
-
-            function movePatrol(i,enemy){
-                const s=enemyPatrolStates[i], p=enemy.patrolPath;
-                let ni=s.pathIndex+s.direction;
-                if(ni>=p.length){ s.direction=-1; ni=p.length-2; }
-                else if(ni<0){ s.direction=1; ni=1; }
-                s.pathIndex=ni; enemy.position={...p[ni]};
-            }
-
-            function flashCell(r,c,cls){
-                const cell=elements.grid.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-                if(cell){ cell.classList.add(cls); setTimeout(()=>cell.classList.remove(cls),600); }
-            }
-
-            function undoMove(){
-                if(gameOver||gameWon||moveHistory.length===0) return;
-                const s=moveHistory.pop();
-                playerPos=s.playerPos; enemies=s.enemies; enemyPatrolStates=s.enemyPatrolStates;
-                wormsRemaining=s.wormsRemaining; moveCount=s.moveCount; dangerCells=s.dangerCells||[];
-                isNewRecord=s.isNewRecord||false; gameOver=gameWon=selectedPlayer=false; highlightCells=[];
-                updateBestBadge(); renderGrid(); updateUI(); updateButtons();
-                elements.status.textContent='↩已撤销';
-                setTimeout(()=>{ if(!gameOver) elements.status.textContent='🎯抓蠕虫回巢'; },1200);
-            }
-
-            function showWinMsg(isNew,prevBest){
-                const name=levels[levelIdx].name, best=getBest(levelIdx);
-                elements.box.innerHTML=`<span class="msg-icon">${isNew?'🏆':'🎉'}</span><h2>${name} 通关！</h2>
-                ${isNew?'<div class="new-record-badge">🏆 新纪录！</div>':''}
-                <div class="win-stats"><div class="win-stat-item"><div class="win-stat-value">${moveCount}</div><div class="win-stat-label">本次步数</div></div><div class="win-stat-item"><div class="win-stat-value">${best!==null?best:'--'}</div><div class="win-stat-label">🏆最佳记录</div></div><div class="win-stat-item"><div class="win-stat-value">${prevBest!==null?prevBest:'--'}</div><div class="win-stat-label">📜上次记录</div></div></div>
-                ${isNew&&prevBest!==null?`<p style="color:#e65100;font-size:0.8rem;">比之前快了 <strong>${prevBest-moveCount}</strong> 步！</p>`:''}
-                <div class="btn-row">${levelIdx<levels.length-1?'<button class="btn-primary" onclick="nextLevel()">▶下一关</button>':'<button class="btn-primary" onclick="showRecordsPanel()">📊全部记录</button>'}
-                <button class="btn-retry" onclick="resetLevel()">🔄重玩</button><button class="btn-records" onclick="showRecordsPanel()">📊记录</button><button class="btn-secondary" onclick="hideMessage()">✕关闭</button></div>`;
-                elements.overlay.classList.add('active');
-            }
-
-            function showLoseMsg(){
-                elements.box.innerHTML=`<span class="msg-icon">😿</span><h2>被抓住了</h2><p>再试一次吧！</p>
-                <div class="btn-row"><button class="btn-retry" onclick="resetLevel()">🔄重来</button><button class="btn-secondary" onclick="hideMessage()">✕关闭</button></div>`;
-                elements.overlay.classList.add('active');
-            }
-
-            function showRules(){
-                elements.box.innerHTML=`<span class="msg-icon">🐦</span><h2>小鸟归巢</h2>
-                <p style="font-size:0.8rem;">收集所有蠕虫，返回鸟巢！</p>
-                <div style="text-align:left;font-size:0.74rem;line-height:1.6;margin:4px 0;">
-                <div>🎯 目标：收集所有🪱蠕虫，回到🪹鸟巢</div>
-                <div>👆 操作：直接点击相邻格子移动，或点小鸟看范围</div>
-                <div>🟠 橙色格：巡逻路线</div>
-                <div>🔴 红色格：危险（踏入立即失败，胜利优先）</div>
-                <div>🌿 灌木：可躲避🦅鹰的视线</div></div>
-                <div class="btn-row"><button class="btn-primary" onclick="startGame()">🐦开始游戏</button>
-                <button class="btn-records" onclick="showRecordsPanel()">📊查看记录</button></div>`;
-                elements.overlay.classList.add('active');
-            }
-
-            function showRecordsPanel(){
-                const rc=loadRecords(); let rows='';
-                levels.forEach((L,i)=>{ const b=rc[i], d=b!==null?`<span class="best-highlight">${b}步</span>`:'<span class="no-record">--</span>', ic=i===levelIdx?' current-row':''; rows+=`<tr class="${ic}"><td>${i+1}</td><td>${L.name}</td><td>${d}</td></tr>`; });
-                elements.box.innerHTML=`<span class="msg-icon">📊</span><h2>最佳记录</h2>
-                <table class="records-table"><thead><tr><th>#</th><th>关卡</th><th>最少步数</th></tr></thead><tbody>${rows}</tbody></table>
-                <p style="font-size:0.65rem;color:#888;">记录保存在本地</p>
-                <div class="btn-row"><button class="btn-secondary" onclick="hideMessage()">✕关闭</button><button class="btn-retry" onclick="clearRecords()">🗑清除记录</button></div>`;
-                elements.overlay.classList.add('active');
-            }
-
-            function clearRecords(){ if(confirm('确定要清除所有5关的最佳记录吗？')){ saveRecords(levels.map(()=>null)); updateBestBadge(); hideMessage(); elements.status.textContent='📊记录已清除'; setTimeout(()=>{elements.status.textContent='🎯抓蠕虫回巢';},1500); } }
-            function hideMessage(){ elements.overlay.classList.remove('active'); }
-            function startGame(){ gameStarted=true; Sound.init(); hideMessage(); loadLevel(0); }
-
-            window.resetLevel=()=>{ hideMessage(); loadLevel(levelIdx); };
-            window.nextLevel=()=>{ hideMessage(); if(levelIdx<levels.length-1) loadLevel(levelIdx+1); };
-            window.prevLevel=()=>{ hideMessage(); if(levelIdx>0) loadLevel(levelIdx-1); };
-            window.undoMove=undoMove; window.showRecordsPanel=showRecordsPanel; window.clearRecords=clearRecords;
-            window.startGame=startGame; window.hideMessage=hideMessage;
-
-            elements.overlay.addEventListener('click',e=>{ if(e.target===elements.overlay&&gameStarted) hideMessage(); });
-            document.addEventListener('keydown',e=>{
-                if(!gameStarted||gameOver||gameWon||elements.overlay.classList.contains('active')) return;
-                let dr=0,dc=0;
-                if(e.key==='ArrowUp'||e.key==='w') dr=-1; else if(e.key==='ArrowDown'||e.key==='s') dr=1;
-                else if(e.key==='ArrowLeft'||e.key==='a') dc=-1; else if(e.key==='ArrowRight'||e.key==='d') dc=1;
-                else if(e.key==='r'||e.key==='R'){ resetLevel(); return; }
-                else if((e.key==='z'||e.key==='Z')&&(e.ctrlKey||e.metaKey)){ e.preventDefault(); undoMove(); return; }
-                else return;
-                e.preventDefault(); const nr=playerPos.row+dr, nc=playerPos.col+dc;
-                if(cellType(nr,nc)!==CELL_WALL && !enemyAt(nr,nc)) executeMove(nr,nc);
-            });
-            let tx=0,ty=0;
-            elements.grid.addEventListener('touchstart',e=>{ if(e.touches.length===1){ tx=e.touches[0].clientX; ty=e.touches[0].clientY; } },{passive:true});
-            elements.grid.addEventListener('touchend',e=>{
-                if(!gameStarted||gameOver||gameWon) return;
-                const dx=(e.changedTouches[0]?.clientX||tx)-tx, dy=(e.changedTouches[0]?.clientY||ty)-ty;
-                if(Math.abs(dx)<30&&Math.abs(dy)<30) return;
-                let dr=0,dc=0; if(Math.abs(dx)>Math.abs(dy)) dc=dx>0?1:-1; else dr=dy>0?1:-1;
-                const nr=playerPos.row+dr, nc=playerPos.col+dc;
-                if(cellType(nr,nc)!==CELL_WALL && !enemyAt(nr,nc)){ e.preventDefault(); executeMove(nr,nc); }
-            });
-
-            gameStarted=false; showRules(); loadLevel(0);
-        })();
-    </script>
+menuDiv.style.display='block'; gameDiv.style.display='none'; applyLang();
+</script>
 </body>
 </html>
